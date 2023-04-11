@@ -1,0 +1,54 @@
+{
+  "name": "polarrec-zotero-plugin",
+  "version": "0.1.0",
+  "description": "Provides the PolarRec service within the Zotero UI",
+  "config": {
+    "addonName": "PolarRec (Zotero Plugin)",
+    "addonID": "PolarRec-Zotero-Plugin@jyjulianwong.com",
+    "addonRef": "PolarRec-Zotero-Plugin",
+    "addonInstance": "PolarrecZoteroPlugin",
+    "releasepage": "https://github.com/jyjulianwong/PolarRec-Zotero-Plugin/releases/latest/download/polarrec-zotero-plugin.xpi",
+    "updaterdf": "https://raw.githubusercontent.com/jyjulianwong/PolarRec-Zotero-Plugin/bootstrap/update.json"
+  },
+  "main": "src/index.ts",
+  "scripts": {
+    "build-dev": "cross-env NODE_ENV=development node scripts/build.js",
+    "build-prod": "cross-env NODE_ENV=production node scripts/build.js",
+    "build": "concurrently -c auto npm:build-prod npm:tsc",
+    "tsc": "tsc --noEmit",
+    "start-z6": "node scripts/start.js --z 6",
+    "start-z7": "node scripts/start.js --z 7",
+    "start": "node scripts/start.js",
+    "stop": "node scripts/stop.js",
+    "restart-dev": "npm run build-dev && npm run stop && npm run start",
+    "restart-prod": "npm run build-prod && npm run stop && npm run start",
+    "restart": "npm run restart-dev",
+    "release": "release-it",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jyjulianwong/PolarRec-Zotero-Plugin.git"
+  },
+  "author": "jyjulianwong",
+  "license": "AGPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/jyjulianwong/PolarRec-Zotero-Plugin/issues"
+  },
+  "homepage": "https://github.com/jyjulianwong/PolarRec-Zotero-Plugin",
+  "dependencies": {
+    "zotero-plugin-toolkit": "^2.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^18.11.17",
+    "compressing": "^1.6.3",
+    "concurrently": "^7.6.0",
+    "cross-env": "^7.0.3",
+    "esbuild": "^0.17.4",
+    "minimist": "^1.2.7",
+    "release-it": "^15.6.0",
+    "replace-in-file": "^6.3.5",
+    "typescript": "^4.9.4",
+    "zotero-types": "^1.0.6"
+  }
+}

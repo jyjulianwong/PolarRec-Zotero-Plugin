@@ -1,0 +1,7 @@
+**/builds
+node_modules
+package-lock.json
+zotero-cmd.json
+
+# Additional
+.idea
