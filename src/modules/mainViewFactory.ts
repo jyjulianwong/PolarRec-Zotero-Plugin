@@ -83,6 +83,7 @@ export class MainViewFactory {
         styles: {
           "display": "none"
         },
+        // @ts-ignore
         children: [
           {
             tag: "hr",
@@ -123,6 +124,7 @@ export class MainViewFactory {
     return ztoolkit.LibraryTabPanel.register(
       getString("polarrec.name"),
       (panel: XUL.Element, win: Window) => {
+        // @ts-ignore
         const mainView = ztoolkit.UI.createElement(win.document, "vbox", {
           styles: {
             "padding": "0px 10px 10px 10px",
