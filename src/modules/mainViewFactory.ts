@@ -2,7 +2,7 @@ import { MainViewController } from "./mainViewController";
 import { getString } from "./locale";
 
 export class MainViewFactory {
-  static #MAX_RESULT_COUNT = 16;
+  static #MAX_RESULT_COUNT = 50;
   static #LOADING_VIEW_ELEM_ID = "polarrec-reco-loading-view";
   static #RESULT_VIEW_ELEM_ID_STEM = "polarrec-reco-result-view-";
   static #RESULT_TITLE_ELEM_ID_STEM = "polarrec-reco-result-title-";

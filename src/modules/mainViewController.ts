@@ -88,7 +88,7 @@ export class MainViewController {
       .then((response: any) => {
         const related_resources: any[] = response["related"];
 
-        for (let i = 0; i < related_resources.length; i++) { // TODO: Set to number of results.
+        for (let i = 0; i < related_resources.length; i++) {
           const viewElem = document.getElementById(resultViewElemIds[i]);
           const titleElem = document.getElementById(resultTitleElemIds[i]);
           const authorsElem = document.getElementById(resultAuthorsElemIds[i]);
