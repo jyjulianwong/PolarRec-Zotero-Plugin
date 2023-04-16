@@ -1,3 +1,5 @@
+import { getString } from "./locale";
+
 export class MainViewController {
   /**
    * A helper function that extracts the list of authors from a Zotero Item.
@@ -53,6 +55,7 @@ export class MainViewController {
     const loadElem = document.getElementById(loadingViewElemId);
     if (loadElem === null)
       return;
+    loadElem.innerText = getString("polarrec.reco.load");
     loadElem.style.display = "block";
 
     const targetItem = ZoteroPane.getSelectedItems(false)[0];
@@ -104,13 +107,18 @@ export class MainViewController {
             continue;
 
           titleElem.innerText = related_resources[i].title;
-          authorsElem.innerText = related_resources[i].authors.reduce((text: string, author: string) => text + ", " + author);
+          authorsElem.innerText = related_resources[i].authors
+            .reduce((text: string, author: string) => text + ", " + author);
           yearElem.innerText = related_resources[i].year;
           urlElem.innerText = related_resources[i].url;
 
           loadElem.style.display = "none";
           viewElem.style.display = "block";
         }
+      })
+      .catch((error: any) => {
+        loadElem.innerText = error;
+        loadElem.style.display = "block";
       });
   }
 }
