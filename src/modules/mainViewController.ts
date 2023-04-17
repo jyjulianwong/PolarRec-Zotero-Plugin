@@ -1,6 +1,14 @@
 import { getString } from "./locale";
 
 export class MainViewController {
+  static #isDevelopmentBuild(): boolean {
+    /**
+     * @returns True if the plugin was built in development mode.
+     * @private
+     */
+    return process.env.NODE_ENV === "development";
+  }
+
   /**
    * A helper function that extracts the list of authors from a Zotero Item.
    *
@@ -77,7 +85,12 @@ export class MainViewController {
     if (targetUrl !== "")
       targetData.url = targetUrl;
 
-    window.fetch("http://localhost:5000/recommend", {
+    const apiUrlBase = this.#isDevelopmentBuild() ?
+      // If in development mode, use locally-deployed Flask server instead.
+      "http://localhost:5000" :
+      // Otherwise, use latest stable release of PolarRec API.
+      "http://polarrec-env.eba-nzautmta.eu-west-2.elasticbeanstalk.com";
+    window.fetch(apiUrlBase + "/recommend", {
       method: "POST",
       headers: {
         "Accept": "application/json",
