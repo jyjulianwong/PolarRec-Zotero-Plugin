@@ -3,7 +3,7 @@
     "PolarRec-Zotero-Plugin@jyjulianwong.com": {
       "updates": [
         {
-          "version": "0.1.0",
+          "version": "0.2.0",
           "update_link": "https://github.com/jyjulianwong/PolarRec-Zotero-Plugin/releases/latest/download/polarrec-zotero-plugin.xpi",
           "applications": {
             "gecko": {
@@ -12,7 +12,7 @@
           }
         },
         {
-          "version": "0.1.0",
+          "version": "0.2.0",
           "update_link": "https://github.com/jyjulianwong/PolarRec-Zotero-Plugin/releases/latest/download/polarrec-zotero-plugin.xpi",
           "applications": {
             "zotero": {
