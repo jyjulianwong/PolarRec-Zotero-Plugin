@@ -119,11 +119,14 @@ export class MainViewController {
           )
             continue;
 
-          titleElem.innerText = related_resources[i].title;
-          authorsElem.innerText = related_resources[i].authors
-            .reduce((text: string, author: string) => text + ", " + author);
-          yearElem.innerText = related_resources[i].year;
-          urlElem.innerText = related_resources[i].url;
+          titleElem.setAttribute("value", related_resources[i].title);
+          authorsElem.setAttribute(
+            "value",
+            related_resources[i].authors
+              .reduce((text: string, author: string) => text + ", " + author)
+          );
+          yearElem.setAttribute("value", related_resources[i].year);
+          urlElem.setAttribute("value", related_resources[i].url);
 
           loadElem.style.display = "none";
           viewElem.style.display = "block";

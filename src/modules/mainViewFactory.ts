@@ -11,6 +11,29 @@ export class MainViewFactory {
   static #RESULT_URL_ELEM_ID_STEM = "polarrec-reco-result-url-";
 
   /**
+   * @param elemId - The HTML element ID used to identify this element.
+   * @param text - The value, or inner text, to be displayed.
+   * @param bold - Whether the inner text should be bolded or not.
+   * @returns The HTML element for a result field component in JSON.
+   * @private
+   */
+  static #getResultFieldElem(elemId: string, text: string, bold = false) {
+    return {
+      tag: "input",
+      id: elemId,
+      styles: {
+        "width": "100%",
+        "border": "none",
+        "font-weight": bold ? "bold" : "normal",
+      },
+      attributes: {
+        "readonly": "true",
+        "value": text,
+      },
+    }
+  }
+
+  /**
    * Registers the Main View as a library tab panel.
    *
    * @returns The Tab ID of the View, used for the unregister process.
@@ -89,34 +112,23 @@ export class MainViewFactory {
             tag: "hr",
             namespace: "html",
           },
-          {
-            tag: "h4",
-            id: this.#RESULT_TITLE_ELEM_ID_STEM + i.toString(),
-            properties: {
-              innerText: "Related Resource " + i.toString(),
-            },
-          },
-          {
-            tag: "div",
-            id: this.#RESULT_AUTHORS_ELEM_ID_STEM + i.toString(),
-            properties: {
-              innerText: "No Authors",
-            },
-          },
-          {
-            tag: "div",
-            id: this.#RESULT_YEAR_ELEM_ID_STEM + i.toString(),
-            properties: {
-              innerText: "No Year",
-            },
-          },
-          {
-            tag: "div",
-            id: this.#RESULT_URL_ELEM_ID_STEM + i.toString(),
-            properties: {
-              innerText: "No URL",
-            },
-          }
+          this.#getResultFieldElem(
+            this.#RESULT_TITLE_ELEM_ID_STEM + i.toString(),
+            "Related Resource " + i.toString(),
+            true,
+          ),
+          this.#getResultFieldElem(
+            this.#RESULT_AUTHORS_ELEM_ID_STEM + i.toString(),
+            "No Authors",
+          ),
+          this.#getResultFieldElem(
+            this.#RESULT_YEAR_ELEM_ID_STEM + i.toString(),
+            "No Year",
+          ),
+          this.#getResultFieldElem(
+            this.#RESULT_URL_ELEM_ID_STEM + i.toString(),
+            "No URL",
+          ),
         ]
       })
     }
