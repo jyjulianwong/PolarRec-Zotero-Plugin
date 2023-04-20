@@ -1,12 +1,17 @@
 import { getString } from "./locale";
 
 export class MainViewController {
-  static #isDevelopmentBuild(): boolean {
+  static #getApiUrlBase(): string {
     /**
-     * @returns True if the plugin was built in development mode.
+     * @returns The PolarRec API's base URL depending on if the plugin was built
+     * in development mode.
      * @private
      */
-    return process.env.NODE_ENV === "development";
+    return __env__ === "development" ?
+      // If in development mode, use locally-deployed Flask server instead.
+      "http://127.0.0.1:5000" :
+      // Otherwise, use latest stable release of PolarRec API.
+      "http://polarrec-env.eba-nzautmta.eu-west-2.elasticbeanstalk.com";
   }
 
   /**
@@ -85,12 +90,7 @@ export class MainViewController {
     if (targetUrl !== "")
       targetData.url = targetUrl;
 
-    const apiUrlBase = this.#isDevelopmentBuild() ?
-      // If in development mode, use locally-deployed Flask server instead.
-      "http://localhost:5000" :
-      // Otherwise, use latest stable release of PolarRec API.
-      "http://polarrec-env.eba-nzautmta.eu-west-2.elasticbeanstalk.com";
-    window.fetch(apiUrlBase + "/recommend", {
+    window.fetch(this.#getApiUrlBase() + "/recommend", {
       method: "POST",
       headers: {
         "Accept": "application/json",
