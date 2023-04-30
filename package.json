@@ -35,7 +35,7 @@
   "bugs": {
     "url": "https://github.com/jyjulianwong/PolarRec-Zotero-Plugin/issues"
   },
-  "homepage": "https://github.com/jyjulianwong/PolarRec-Zotero-Plugin",
+  "homepage": "https://github.com/jyjulianwong/PolarRec-Zotero-Plugin/blob/main/README.md",
   "dependencies": {
     "zotero-plugin-toolkit": "^2.0.1"
   },
