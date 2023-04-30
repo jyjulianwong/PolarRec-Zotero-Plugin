@@ -1,7 +1,9 @@
-import { getString } from "./locale";
+import { MainViewControllable, MainView } from "./mainView";
 
-export class MainViewController {
-  static #getApiUrlBase(): string {
+export class MainViewController implements MainViewControllable {
+  #view?: MainView;
+
+  #getApiUrlBase(): string {
     /**
      * @returns The PolarRec API's base URL depending on if the plugin was built
      * in development mode.
@@ -21,7 +23,7 @@ export class MainViewController {
    * @returns The list of authors, each as a string, from the Item.
    * @private
    */
-  static #getAuthorsFromZoteroItem(item: Zotero.Item) {
+  #getAuthorsFromZoteroItem(item: Zotero.Item) {
     let authors: string[] = [];
     const creators = item.getCreators();
     creators.forEach((creator) => {
@@ -39,7 +41,7 @@ export class MainViewController {
    * @returns The year of publication as a string.
    * @private
    */
-  static #getYearFromZoteroItem(item: Zotero.Item) {
+  #getYearFromZoteroItem(item: Zotero.Item) {
     const itemDate = item.getField("date").toString();
     const candidates = itemDate.match(/[^\d]\d{4}[^\d]/);
     if (candidates === null || candidates.length === 0)
@@ -47,29 +49,26 @@ export class MainViewController {
     return candidates[0];
   }
 
+  constructor() {}
+
+  /**
+   * This must be called after the view has been registered.
+   *
+   * @param view: The view that is controlled by this controller.
+   */
+  bindToView(view: MainView) {
+    view.addRecoButtonListener(this);
+    this.#view = view;
+  }
+
   /**
    * A callback function for when the recommendation button is clicked.
-   *
-   * @param loadingViewElemId - The element ID for the Loading View element.
-   * @param resultViewElemIds - The element IDs for each Result View element.
-   * @param resultTitleElemIds - The element IDs for each Result Title element.
-   * @param resultAuthorsElemIds - The element IDs for each Result Authors element.
-   * @param resultYearElemIds - The element IDs for each Result Year element.
-   * @param resultUrlElemIds - The element IDs for each Result URL element.
    */
-  static onRecoButtonClicked(
-    loadingViewElemId: string,
-    resultViewElemIds: string[],
-    resultTitleElemIds: string[],
-    resultAuthorsElemIds: string[],
-    resultYearElemIds: string[],
-    resultUrlElemIds: string[]
-  ) {
-    const loadElem = document.getElementById(loadingViewElemId);
-    if (loadElem === null)
-      return;
-    loadElem.innerText = getString("polarrec.reco.load");
-    loadElem.style.display = "block";
+  onRecoButtonClicked() {
+    if (this.#view !== undefined) {
+      this.#view.updateResultViews([]);
+      this.#view.updateLoadingView(true);
+    }
 
     const targetItem = ZoteroPane.getSelectedItems(false)[0];
     const targetAuthors = this.#getAuthorsFromZoteroItem(targetItem);
@@ -102,39 +101,16 @@ export class MainViewController {
     })
       .then((response: any) => response.json())
       .then((response: any) => {
-        const related_resources: any[] = response["related"];
+        const results: any[] = response["related"];
 
-        for (let i = 0; i < related_resources.length; i++) {
-          const viewElem = document.getElementById(resultViewElemIds[i]);
-          const titleElem = document.getElementById(resultTitleElemIds[i]);
-          const authorsElem = document.getElementById(resultAuthorsElemIds[i]);
-          const yearElem = document.getElementById(resultYearElemIds[i]);
-          const urlElem = document.getElementById(resultUrlElemIds[i]);
-          if (
-            viewElem === null ||
-            titleElem === null ||
-            authorsElem === null ||
-            yearElem === null ||
-            urlElem === null
-          )
-            continue;
-
-          titleElem.setAttribute("value", related_resources[i].title);
-          authorsElem.setAttribute(
-            "value",
-            related_resources[i].authors
-              .reduce((text: string, author: string) => text + ", " + author)
-          );
-          yearElem.setAttribute("value", related_resources[i].year);
-          urlElem.setAttribute("value", related_resources[i].url);
-
-          loadElem.style.display = "none";
-          viewElem.style.display = "block";
+        if (this.#view !== undefined) {
+          this.#view.updateResultViews(results);
+          this.#view.updateLoadingView(false);
         }
       })
       .catch((error: any) => {
-        loadElem.innerText = error;
-        loadElem.style.display = "block";
+        if (this.#view !== undefined)
+          this.#view.updateLoadingView(false, error.toString());
       });
   }
 }

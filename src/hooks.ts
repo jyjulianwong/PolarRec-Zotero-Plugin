@@ -1,4 +1,5 @@
-import { MainViewFactory } from "./modules/mainViewFactory";
+import { MainView } from "./modules/mainView";
+import { MainViewController } from "./modules/mainViewController";
 import { config } from "../package.json";
 import { initLocale } from "./modules/locale";
 
@@ -14,7 +15,10 @@ async function onStartup() {
     `chrome://${config.addonRef}/content/icons/favicon.png`
   );
 
-  MainViewFactory.register();
+  const mainView = new MainView();
+  const mainViewController = new MainViewController();
+  mainView.register();
+  mainViewController.bindToView(mainView);
 }
 
 function onShutdown(): void {
