@@ -1,19 +1,39 @@
 import { MainViewControllable, MainView } from "./mainView";
+import { CustomLogger } from "./customLogger";
 
 export class MainViewController implements MainViewControllable {
   #view?: MainView;
 
+  /**
+   * @returns The PolarRec API's base URL depending on if the plugin was built
+   * in development mode.
+   * @private
+   */
   #getApiUrlBase(): string {
-    /**
-     * @returns The PolarRec API's base URL depending on if the plugin was built
-     * in development mode.
-     * @private
-     */
     return __env__ === "development" ?
       // If in development mode, use locally-deployed Flask server instead.
       "http://127.0.0.1:5000" :
       // Otherwise, use latest stable release of PolarRec API.
       "http://polarrec-env.eba-nzautmta.eu-west-2.elasticbeanstalk.com";
+  }
+
+  /**
+   * @returns The currently selected Zotero Item.
+   * @private
+   */
+  #getCurrZoteroItem(): Zotero.Item {
+    return ZoteroPane.getSelectedItems(false)[0];
+  }
+
+  /**
+   * @returns All Zotero Items contained in the currently selected Collection.
+   * @private
+   */
+  #getZoteroItemsInCurrCollection(): Zotero.Item[] {
+    const collection = ZoteroPane.getSelectedCollection();
+    if (collection === undefined)
+      return [];
+    return collection.getChildItems();
   }
 
   /**
@@ -23,7 +43,7 @@ export class MainViewController implements MainViewControllable {
    * @returns The list of authors, each as a string, from the Item.
    * @private
    */
-  #getAuthorsFromZoteroItem(item: Zotero.Item) {
+  #getAuthorsFromZoteroItem(item: Zotero.Item): string[] {
     let authors: string[] = [];
     const creators = item.getCreators();
     creators.forEach((creator) => {
@@ -41,12 +61,37 @@ export class MainViewController implements MainViewControllable {
    * @returns The year of publication as a string.
    * @private
    */
-  #getYearFromZoteroItem(item: Zotero.Item) {
+  #getYearFromZoteroItem(item: Zotero.Item): string {
     const itemDate = item.getField("date").toString();
     const candidates = itemDate.match(/[^\d]\d{4}[^\d]/);
     if (candidates === null || candidates.length === 0)
       return "";
     return candidates[0];
+  }
+
+  #getDataFromZoteroItem(item: Zotero.Item): any {
+    const authors = this.#getAuthorsFromZoteroItem(item);
+    const title = item.getField("title").toString();
+    const year = this.#getYearFromZoteroItem(item);
+    const abstract = item.getField("abstractNote").toString();
+    const doi = item.getField("DOI").toString();
+    const url = item.getField("url").toString();
+
+    const data: any = {};
+    if (authors.length !== 0)
+      data.authors = authors;
+    if (title !== "")
+      data.title = title;
+    if (year !== "")
+      data.year = year;
+    if (abstract !== "")
+      data.abstract = abstract;
+    if (doi !== "")
+      data.doi = doi;
+    if (url !== "")
+      data.url = url;
+
+    return data;
   }
 
   constructor() {}
@@ -70,33 +115,28 @@ export class MainViewController implements MainViewControllable {
       this.#view.updateLoadingView(true);
     }
 
-    const targetItem = ZoteroPane.getSelectedItems(false)[0];
-    const targetAuthors = this.#getAuthorsFromZoteroItem(targetItem);
-    const targetTitle = targetItem.getField("title").toString();
-    const targetYear = this.#getYearFromZoteroItem(targetItem);
-    const targetAbstract = targetItem.getField("abstractNote").toString();
-    const targetUrl = targetItem.getField("url").toString();
+    const targetItem = this.#getCurrZoteroItem();
+    const targetData = [this.#getDataFromZoteroItem(targetItem)];
+    const existingRelatedItems = this.#getZoteroItemsInCurrCollection();
+    const existingRelatedData = existingRelatedItems.map(item => {
+      return this.#getDataFromZoteroItem(item);
+    });
 
-    const targetData: any = {};
-    if (targetAuthors.length !== 0)
-      targetData.authors = targetAuthors;
-    if (targetTitle !== "")
-      targetData.title = targetTitle;
-    if (targetYear !== "")
-      targetData.year = targetYear;
-    if (targetAbstract !== "")
-      targetData.abstract = targetAbstract;
-    if (targetUrl !== "")
-      targetData.url = targetUrl;
-
-    window.fetch(this.#getApiUrlBase() + "/recommend", {
+    const apiUrl = this.#getApiUrlBase() + "/recommend";
+    CustomLogger.log(
+      `Sending POST request to ${apiUrl}`,
+      "warning",
+      "MainViewController"
+    );
+    window.fetch(apiUrl, {
       method: "POST",
       headers: {
         "Accept": "application/json",
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        targets: [targetData]
+        "targets": targetData,
+        "existing_related": existingRelatedData
       })
     })
       .then((response: any) => response.json())
