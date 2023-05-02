@@ -139,7 +139,12 @@ export class MainViewController implements MainViewControllable {
         "existing_related": existingRelatedData
       })
     })
-      .then((response: any) => response.json())
+      .then((response: Response) => {
+        if (!response.ok)
+          throw Error(`${apiUrl}: ${response.status}: ${response.statusText}`);
+        return response;
+      })
+      .then((response: Response) => response.json())
       .then((response: any) => {
         const results: any[] = response["related"];
 
