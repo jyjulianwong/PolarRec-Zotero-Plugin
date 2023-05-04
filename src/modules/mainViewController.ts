@@ -72,8 +72,17 @@ export class MainViewController implements MainViewControllable {
     return candidates[0];
   }
 
+  /**
+   * A helper function that converts a Zotero Item into a PolarRec JSON object.
+   *
+   * @param item - The target Zotero Item.
+   * @returns The JSON object to be sent to the PolarRec API.
+   * @private
+   */
   #getDataFromZoteroItem(item: Zotero.Item): any {
     const authors = this.#getAuthorsFromZoteroItem(item);
+    const conferenceName = item.getField("conferenceName").toString();
+    const conferenceLocation = item.getField("place").toString();
     const title = item.getField("title").toString();
     const year = this.#getYearFromZoteroItem(item);
     const abstract = item.getField("abstractNote").toString();
@@ -83,6 +92,10 @@ export class MainViewController implements MainViewControllable {
     const data: any = {};
     if (authors.length !== 0)
       data.authors = authors;
+    if (conferenceName.length !== 0)
+      data.conference_name = conferenceName;
+    if (conferenceLocation.length !== 0)
+      data.conference_location = conferenceLocation;
     if (title !== "")
       data.title = title;
     if (year !== "")
@@ -97,9 +110,28 @@ export class MainViewController implements MainViewControllable {
     return data;
   }
 
+  /**
+   * A helper fuction that generates a filter JSON object based on user's input.
+   *
+   * @param targetData - The target Zotero Item in JSON data format.
+   * @returns The filter JSON object to be sent to the PolarRec API.
+   * @private
+   */
+  #getRecoFilter(targetData: any): any {
+    const filter: any = {};
+    if (targetData.hasOwnProperty("authors"))
+      if (this.#recoAuthorsFiltered)
+        filter.authors = targetData.authors;
+    if (targetData.hasOwnProperty("conference_name"))
+      if (this.#recoConfNameFiltered)
+        filter.conference_name = targetData.conference_name;
+    return filter;
+  }
+
   constructor() {}
 
   /**
+   * Adds this controller as an event listener of the main view.
    * This must be called after the view has been registered.
    *
    * @param view: The view that is controlled by this controller.
@@ -150,6 +182,7 @@ export class MainViewController implements MainViewControllable {
     const existingRelatedData = existingRelatedItems.map(item => {
       return this.#getDataFromZoteroItem(item);
     });
+    const filter = this.#getRecoFilter(targetData);
 
     const apiUrl = this.#getApiUrlBase() + "/recommend";
     CustomLogger.log(
@@ -165,7 +198,8 @@ export class MainViewController implements MainViewControllable {
       },
       body: JSON.stringify({
         "targets": targetData,
-        "existing_related": existingRelatedData
+        "existing_related": existingRelatedData,
+        "filter": filter
       })
     })
       .then((response: Response) => {
