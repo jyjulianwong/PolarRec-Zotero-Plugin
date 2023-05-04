@@ -2,6 +2,9 @@ import { MainViewControllable, MainView } from "./mainView";
 import { CustomLogger } from "./customLogger";
 
 export class MainViewController implements MainViewControllable {
+  #recoAuthorsFiltered = false;
+  #recoConfNameFiltered = false;
+
   #view?: MainView;
 
   /**
@@ -102,8 +105,34 @@ export class MainViewController implements MainViewControllable {
    * @param view: The view that is controlled by this controller.
    */
   bindToView(view: MainView) {
+    view.addRecoAuthorsFilterListener(this);
+    view.addRecoConfNameFilterListener(this);
     view.addRecoButtonListener(this);
     this.#view = view;
+  }
+
+  /**
+   * A callback function for when the authors filter is clicked.
+   */
+  onRecoAuthorsFilterClicked(checked: boolean) {
+    this.#recoAuthorsFiltered = checked;
+    CustomLogger.log(
+      `Authors filtered in recommendations: ${checked}`,
+      "warning",
+      "MainViewController"
+    );
+  }
+
+  /**
+   * A callback function for when the conference name filter is clicked.
+   */
+  onRecoConfNameFilterClicked(checked: boolean) {
+    this.#recoConfNameFiltered = checked;
+    CustomLogger.log(
+      `Conference name filtered in recommendations: ${checked}`,
+      "warning",
+      "MainViewController"
+    );
   }
 
   /**

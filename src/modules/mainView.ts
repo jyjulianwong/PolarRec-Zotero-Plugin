@@ -1,5 +1,9 @@
 import { getString } from "./locale";
 
+/**
+ * The fields that are included in a recommendation result entry.
+ * Not all available fields are displayed -- only the necessary ones.
+ */
 interface Result {
   title: string;
   authors: string[];
@@ -7,12 +11,19 @@ interface Result {
   url: string;
 }
 
+/**
+ * The methods a controller for the main view needs to implement.
+ */
 interface MainViewControllable {
+  onRecoAuthorsFilterClicked(checked: boolean): void;
+  onRecoConfNameFilterClicked(checked: boolean): void;
   onRecoButtonClicked(): void;
 }
 
 class MainView {
   #MAX_RESULT_COUNT = 50;
+  #RECO_AUTHORS_FILTER_ELEM_ID = "polarrec-reco-authors-filter";
+  #RECO_CONF_NAME_FILTER_ELEM_ID = "polarrec-reco-conf-name-filter";
   #RECO_BUTTON_ELEM_ID = "polarrec-reco-button";
   #LOADING_VIEW_ELEM_ID = "polarrec-reco-loading-view";
   #RESULT_VIEW_ELEM_ID_STEM = "polarrec-reco-result-view-";
@@ -20,6 +31,39 @@ class MainView {
   #RESULT_AUTHORS_ELEM_ID_STEM = "polarrec-reco-result-authors-";
   #RESULT_YEAR_ELEM_ID_STEM = "polarrec-reco-result-year-";
   #RESULT_URL_ELEM_ID_STEM = "polarrec-reco-result-url-";
+
+  /**
+   * Builds a checkbox-style recommendation filter element.
+   *
+   * @param elemId - The HTML element ID used to identify this element.
+   * @param text - The value, or inner text, to be displayed.
+   * @returns The HTML element for a recommendation filter component in JSON.
+   * @private
+   */
+  #getRecoFilterElem(elemId: string, text: string) {
+    return {
+      tag: "div",
+      children: [
+        {
+          tag: "input",
+          id: elemId,
+          attributes: {
+            "type": "checkbox",
+            "name": elemId,
+          },
+        },
+        {
+          tag: "label",
+          attributes: {
+            "for": elemId,
+          },
+          properties: {
+            innerText: text,
+          },
+        },
+      ],
+    };
+  }
 
   /**
    * Builds a field child element that belongs in a result element.
@@ -43,7 +87,7 @@ class MainView {
         "readonly": "true",
         "value": text,
       },
-    }
+    };
   }
 
   constructor() {}
@@ -64,10 +108,21 @@ class MainView {
       },
       {
         tag: "div",
+        styles: {
+          "margin": "0px 0px 10px 0px",
+        },
         properties: {
           innerText: getString("polarrec.reco.inst"),
         },
       },
+      this.#getRecoFilterElem(
+        this.#RECO_AUTHORS_FILTER_ELEM_ID,
+        getString("polarrec.reco.filter.authors"),
+      ),
+      this.#getRecoFilterElem(
+        this.#RECO_CONF_NAME_FILTER_ELEM_ID,
+        getString("polarrec.reco.filter.confname"),
+      ),
       {
         tag: "button",
         id: this.#RECO_BUTTON_ELEM_ID,
@@ -198,6 +253,38 @@ class MainView {
       if (viewElem !== null)
         viewElem.style.display = "none";
     }
+  }
+
+  /**
+   * This must be called after this view has been registered.
+   *
+   * @param controller: The controller to this View.
+   */
+  addRecoAuthorsFilterListener(controller: MainViewControllable) {
+    const recoFilter = document.getElementById(this.#RECO_AUTHORS_FILTER_ELEM_ID);
+    if (recoFilter === null)
+      return;
+
+    recoFilter.addEventListener("change", event => {
+      const filter = event.currentTarget as HTMLInputElement;
+      controller.onRecoAuthorsFilterClicked(filter === null ? false : filter.checked);
+    });
+  }
+
+  /**
+   * This must be called after this view has been registered.
+   *
+   * @param controller: The controller to this View.
+   */
+  addRecoConfNameFilterListener(controller: MainViewControllable) {
+    const recoFilter = document.getElementById(this.#RECO_CONF_NAME_FILTER_ELEM_ID);
+    if (recoFilter === null)
+      return;
+
+    recoFilter.addEventListener("change", event => {
+      const filter = event.currentTarget as HTMLInputElement;
+      controller.onRecoConfNameFilterClicked(filter === null ? false : filter.checked);
+    });
   }
 
   /**
