@@ -50,7 +50,7 @@ export class MainViewController implements MainViewControllable {
     let authors: string[] = [];
     const creators = item.getCreators();
     creators.forEach((creator) => {
-      if (creator.creatorTypeID === 0) {
+      if (creator.creatorTypeID === Zotero.CreatorTypes.getID("author")) {
         authors.push(creator.firstName + " " + creator.lastName);
       }
     });
@@ -117,14 +117,16 @@ export class MainViewController implements MainViewControllable {
    * @returns The filter JSON object to be sent to the PolarRec API.
    * @private
    */
-  #getRecoFilter(targetData: any): any {
+  #getRecoFilter(targetData: any[]): any {
     const filter: any = {};
-    if (targetData.hasOwnProperty("authors"))
+    if (targetData[0].hasOwnProperty("authors"))
       if (this.#recoAuthorsFiltered)
-        filter.authors = targetData.authors;
-    if (targetData.hasOwnProperty("conference_name"))
+        // TODO: Extract authors for all target items.
+        filter.authors = targetData[0].authors;
+    if (targetData[0].hasOwnProperty("conference_name"))
       if (this.#recoConfNameFiltered)
-        filter.conference_name = targetData.conference_name;
+        // TODO: Extract conference names for all target items.
+        filter.conference_name = targetData[0].conference_name;
     return filter;
   }
 
