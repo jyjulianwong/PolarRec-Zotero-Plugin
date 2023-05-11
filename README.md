@@ -38,6 +38,19 @@ Ensure that the Zotero application is closed. In your file explorer, open your Z
 *   Open the `prefs.js` file. Remove the two lines that contain `extensions.lastAppBuildId` and `extensions.lastAppVersion` respectively. Save the file changes.
 *   Open the `extensions` directory. Create a file with no extension titled `PolarRec-Zotero-Plugin@jyjulianwong.com`. The contents of the file should be set to the following via a text editor: `/absolute/path/to/repository/builds/addon`. Save the file.
 
+Lastly, in the `scripts` directory of the source code repository, copy the `zotero-cmd-default.json` file and duplicate it, naming your copy as `zotero-cmd.json`. Edit the commands as appropriate depending on your device's operating system and where Zotero has been installed. Below is an example of what `zotero-cmd.json` could look like for a macOS device.
+```json
+{
+  "usage": "Copy and rename this file to zotero-cmd.json. Edit the cmd.",
+  "killZoteroWindows": "taskkill /f /im zotero.exe ",
+  "killZoteroUnix": "kill -9 $(ps -x | grep zotero)",
+  "exec": {
+    "6": "open -a /Applications/Zotero.app",
+    "7": "open -a /Applications/Zotero.app"
+  }
+}
+```
+
 These instructions have been adapted from the [Zotero Plugin Template](https://github.com/windingwind/zotero-plugin-template) documentation. The original instructions can be found [here](https://zotero.yuque.com/staff-gkhviy/developer/skzm5s).
 
 Compile the plugin and restart the Zotero application.
