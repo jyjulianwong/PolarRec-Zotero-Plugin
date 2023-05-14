@@ -211,11 +211,13 @@ export class MainViewController implements MainViewControllable {
       })
       .then((response: Response) => response.json())
       .then((response: any) => {
+        const procTime: number = response["proc_time"];
         const results: any[] = response["related"];
 
         if (this.#view !== undefined) {
+          const procTimeText = `Loaded ${results.length} results in ${procTime.toFixed(3)} seconds.`
           this.#view.updateResultViews(results);
-          this.#view.updateLoadingView(false);
+          this.#view.updateLoadingView(false, procTimeText);
         }
       })
       .catch((error: any) => {
