@@ -9,6 +9,9 @@ interface Result {
   authors: string[];
   year: string;
   url: string;
+  author_based_ranking: string;
+  citation_based_ranking: string;
+  keyword_based_ranking: string;
 }
 
 /**
@@ -31,6 +34,9 @@ class MainView {
   #RESULT_AUTHORS_ELEM_ID_STEM = "polarrec-reco-result-authors-";
   #RESULT_YEAR_ELEM_ID_STEM = "polarrec-reco-result-year-";
   #RESULT_URL_ELEM_ID_STEM = "polarrec-reco-result-url-";
+  #RESULT_AUTHOR_RANK_ELEM_ID_STEM = "polarrec-reco-result-author-rank-";
+  #RESULT_CITATION_RANK_ELEM_ID_STEM = "polarrec-reco-result-citation-rank-";
+  #RESULT_KEYWORD_RANK_ELEM_ID_STEM = "polarrec-reco-result-keyword-rank-";
 
   /**
    * Builds a checkbox-style recommendation filter element.
@@ -71,10 +77,11 @@ class MainView {
    * @param elemId - The HTML element ID used to identify this element.
    * @param text - The value, or inner text, to be displayed.
    * @param bold - Whether the inner text should be bolded or not.
+   * @param grey - Whether the inner text should be greyed or not.
    * @returns The HTML element for a result field component in JSON.
    * @private
    */
-  #getResultFieldElem(elemId: string, text: string, bold = false) {
+  #getResultFieldElem(elemId: string, text: string, bold = false, grey = false) {
     return {
       tag: "input",
       id: elemId,
@@ -82,6 +89,7 @@ class MainView {
         "width": "100%",
         "border": "none",
         "font-weight": bold ? "bold" : "normal",
+        "color": grey ? "grey" : "black",
       },
       attributes: {
         "readonly": "true",
@@ -177,6 +185,24 @@ class MainView {
             this.#RESULT_URL_ELEM_ID_STEM + i.toString(),
             "No URL",
           ),
+          this.#getResultFieldElem(
+            this.#RESULT_AUTHOR_RANK_ELEM_ID_STEM + i.toString(),
+            "No Author-Based Ranking",
+            false,
+            true
+          ),
+          this.#getResultFieldElem(
+            this.#RESULT_CITATION_RANK_ELEM_ID_STEM + i.toString(),
+            "No Citation-Based Ranking",
+            false,
+            true
+          ),
+          this.#getResultFieldElem(
+            this.#RESULT_KEYWORD_RANK_ELEM_ID_STEM + i.toString(),
+            "No Keyword-Based Ranking",
+            false,
+            true
+          ),
         ]
       })
     }
@@ -226,12 +252,18 @@ class MainView {
       const authorsElem = document.getElementById(this.#RESULT_AUTHORS_ELEM_ID_STEM + i.toString());
       const yearElem = document.getElementById(this.#RESULT_YEAR_ELEM_ID_STEM + i.toString());
       const urlElem = document.getElementById(this.#RESULT_URL_ELEM_ID_STEM + i.toString());
+      const authorRankElem = document.getElementById(this.#RESULT_AUTHOR_RANK_ELEM_ID_STEM + i.toString());
+      const citationRankElem = document.getElementById(this.#RESULT_CITATION_RANK_ELEM_ID_STEM + i.toString());
+      const keywordRankElem = document.getElementById(this.#RESULT_KEYWORD_RANK_ELEM_ID_STEM + i.toString());
       if (
         viewElem === null ||
         titleElem === null ||
         authorsElem === null ||
         yearElem === null ||
-        urlElem === null
+        urlElem === null ||
+        authorRankElem === null ||
+        citationRankElem === null ||
+        keywordRankElem === null
       )
         continue;
 
@@ -243,6 +275,9 @@ class MainView {
       );
       yearElem.setAttribute("value", results[i].year);
       urlElem.setAttribute("value", results[i].url);
+      authorRankElem.setAttribute("value", `Author-based ranking:\t${results[i].author_based_ranking}`);
+      citationRankElem.setAttribute("value", `Citation-based ranking:\t${results[i].citation_based_ranking}`);
+      keywordRankElem.setAttribute("value", `Keyword-based ranking:\t${results[i].keyword_based_ranking}`);
 
       viewElem.style.display = "block";
     }
