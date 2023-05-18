@@ -25,6 +25,11 @@ interface MainViewControllable {
 
 class MainView {
   #MAX_RESULT_COUNT = 50;
+  #RESULT_LIST_NAMES = [
+    getString("polarrec.reco.resultlist.existing"),
+    getString("polarrec.reco.resultlist.database"),
+    getString("polarrec.reco.resultlist.citation")
+  ];
   #RECO_AUTHORS_FILTER_ELEM_ID = "polarrec-reco-authors-filter";
   #RECO_CONF_NAME_FILTER_ELEM_ID = "polarrec-reco-conf-name-filter";
   #RECO_BUTTON_ELEM_ID = "polarrec-reco-button";
@@ -154,57 +159,68 @@ class MainView {
       },
     ]
 
-    // Add the result elements to the View.
-    for (let i = 0; i < this.#MAX_RESULT_COUNT; i++) {
+    // Add multiple lists of results to the View.
+    for (let l = 0; l < this.#RESULT_LIST_NAMES.length; l++) {
+      // @ts-ignore
       mainViewElems.push({
-        tag: "div",
-        id: this.#RESULT_VIEW_ELEM_ID_STEM + i.toString(),
-        styles: {
-          "display": "none"
+        tag: "h3",
+        properties: {
+          innerText: this.#RESULT_LIST_NAMES[l],
         },
-        // @ts-ignore
-        children: [
-          {
-            tag: "hr",
-            namespace: "html",
+      });
+
+      // Add the result elements for this list to the View.
+      for (let i = 0; i < this.#MAX_RESULT_COUNT; i++) {
+        mainViewElems.push({
+          tag: "div",
+          id: this.#RESULT_VIEW_ELEM_ID_STEM + l.toString() + i.toString(),
+          styles: {
+            "display": "none"
           },
-          this.#getResultFieldElem(
-            this.#RESULT_TITLE_ELEM_ID_STEM + i.toString(),
-            "Related Resource " + i.toString(),
-            true,
-          ),
-          this.#getResultFieldElem(
-            this.#RESULT_AUTHORS_ELEM_ID_STEM + i.toString(),
-            "No Authors",
-          ),
-          this.#getResultFieldElem(
-            this.#RESULT_YEAR_ELEM_ID_STEM + i.toString(),
-            "No Year",
-          ),
-          this.#getResultFieldElem(
-            this.#RESULT_URL_ELEM_ID_STEM + i.toString(),
-            "No URL",
-          ),
-          this.#getResultFieldElem(
-            this.#RESULT_AUTHOR_RANK_ELEM_ID_STEM + i.toString(),
-            "No Author-Based Ranking",
-            false,
-            true
-          ),
-          this.#getResultFieldElem(
-            this.#RESULT_CITATION_RANK_ELEM_ID_STEM + i.toString(),
-            "No Citation-Based Ranking",
-            false,
-            true
-          ),
-          this.#getResultFieldElem(
-            this.#RESULT_KEYWORD_RANK_ELEM_ID_STEM + i.toString(),
-            "No Keyword-Based Ranking",
-            false,
-            true
-          ),
-        ]
-      })
+          // @ts-ignore
+          children: [
+            {
+              tag: "hr",
+              namespace: "html",
+            },
+            this.#getResultFieldElem(
+              this.#RESULT_TITLE_ELEM_ID_STEM + l.toString() + i.toString(),
+              "Related Resource " + i.toString(),
+              true,
+            ),
+            this.#getResultFieldElem(
+              this.#RESULT_AUTHORS_ELEM_ID_STEM + l.toString() + i.toString(),
+              "No Authors",
+            ),
+            this.#getResultFieldElem(
+              this.#RESULT_YEAR_ELEM_ID_STEM + l.toString() + i.toString(),
+              "No Year",
+            ),
+            this.#getResultFieldElem(
+              this.#RESULT_URL_ELEM_ID_STEM + l.toString() + i.toString(),
+              "No URL",
+            ),
+            this.#getResultFieldElem(
+              this.#RESULT_AUTHOR_RANK_ELEM_ID_STEM + l.toString() + i.toString(),
+              "No Author-Based Ranking",
+              false,
+              true
+            ),
+            this.#getResultFieldElem(
+              this.#RESULT_CITATION_RANK_ELEM_ID_STEM + l.toString() + i.toString(),
+              "No Citation-Based Ranking",
+              false,
+              true
+            ),
+            this.#getResultFieldElem(
+              this.#RESULT_KEYWORD_RANK_ELEM_ID_STEM + l.toString() + i.toString(),
+              "No Keyword-Based Ranking",
+              false,
+              true
+            ),
+          ]
+        })
+      }
     }
 
     // Register the View to the Zotero UI and return the panel tab ID.
@@ -245,48 +261,55 @@ class MainView {
     loadElem.style.display = isLoading ? "block" : "none";
   }
 
-  updateResultViews(results: Result[]) {
-    for (let i = 0; i < results.length; i++) {
-      const viewElem = document.getElementById(this.#RESULT_VIEW_ELEM_ID_STEM + i.toString());
-      const titleElem = document.getElementById(this.#RESULT_TITLE_ELEM_ID_STEM + i.toString());
-      const authorsElem = document.getElementById(this.#RESULT_AUTHORS_ELEM_ID_STEM + i.toString());
-      const yearElem = document.getElementById(this.#RESULT_YEAR_ELEM_ID_STEM + i.toString());
-      const urlElem = document.getElementById(this.#RESULT_URL_ELEM_ID_STEM + i.toString());
-      const authorRankElem = document.getElementById(this.#RESULT_AUTHOR_RANK_ELEM_ID_STEM + i.toString());
-      const citationRankElem = document.getElementById(this.#RESULT_CITATION_RANK_ELEM_ID_STEM + i.toString());
-      const keywordRankElem = document.getElementById(this.#RESULT_KEYWORD_RANK_ELEM_ID_STEM + i.toString());
-      if (
-        viewElem === null ||
-        titleElem === null ||
-        authorsElem === null ||
-        yearElem === null ||
-        urlElem === null ||
-        authorRankElem === null ||
-        citationRankElem === null ||
-        keywordRankElem === null
-      )
-        continue;
+  updateResultViews(results: Result[][]) {
+    if (results.length === 0)
+      // Create an empty array for each result list.
+      // This is to prevent out-of-range array accesses in the steps below.
+      results = Array(this.#RESULT_LIST_NAMES.length).fill([]);
 
-      titleElem.setAttribute("value", results[i].title);
-      authorsElem.setAttribute(
-        "value",
-        results[i].authors
-          .reduce((text: string, author: string) => text + ", " + author)
-      );
-      yearElem.setAttribute("value", results[i].year);
-      urlElem.setAttribute("value", results[i].url);
-      authorRankElem.setAttribute("value", `Author-based ranking:\t${results[i].author_based_ranking}`);
-      citationRankElem.setAttribute("value", `Citation-based ranking:\t${results[i].citation_based_ranking}`);
-      keywordRankElem.setAttribute("value", `Keyword-based ranking:\t${results[i].keyword_based_ranking}`);
+    for (let l = 0; l < this.#RESULT_LIST_NAMES.length; l++) {
+      for (let i = 0; i < results[l].length; i++) {
+        const viewElem = document.getElementById(this.#RESULT_VIEW_ELEM_ID_STEM + l.toString() + i.toString());
+        const titleElem = document.getElementById(this.#RESULT_TITLE_ELEM_ID_STEM + l.toString() + i.toString());
+        const authorsElem = document.getElementById(this.#RESULT_AUTHORS_ELEM_ID_STEM + l.toString() + i.toString());
+        const yearElem = document.getElementById(this.#RESULT_YEAR_ELEM_ID_STEM + l.toString() + i.toString());
+        const urlElem = document.getElementById(this.#RESULT_URL_ELEM_ID_STEM + l.toString() + i.toString());
+        const authorRankElem = document.getElementById(this.#RESULT_AUTHOR_RANK_ELEM_ID_STEM + l.toString() + i.toString());
+        const citationRankElem = document.getElementById(this.#RESULT_CITATION_RANK_ELEM_ID_STEM + l.toString() + i.toString());
+        const keywordRankElem = document.getElementById(this.#RESULT_KEYWORD_RANK_ELEM_ID_STEM + l.toString() + i.toString());
+        if (
+          viewElem === null ||
+          titleElem === null ||
+          authorsElem === null ||
+          yearElem === null ||
+          urlElem === null ||
+          authorRankElem === null ||
+          citationRankElem === null ||
+          keywordRankElem === null
+        )
+          continue;
 
-      viewElem.style.display = "block";
-    }
+        titleElem.setAttribute("value", results[l][i].title);
+        authorsElem.setAttribute(
+          "value",
+          results[l][i].authors
+            .reduce((text: string, author: string) => text + ", " + author)
+        );
+        yearElem.setAttribute("value", results[l][i].year);
+        urlElem.setAttribute("value", results[l][i].url);
+        authorRankElem.setAttribute("value", `Author-based ranking:\t${results[l][i].author_based_ranking}`);
+        citationRankElem.setAttribute("value", `Citation-based ranking:\t${results[l][i].citation_based_ranking}`);
+        keywordRankElem.setAttribute("value", `Keyword-based ranking:\t${results[l][i].keyword_based_ranking}`);
 
-    // Hide the remaining unused result elements.
-    for (let i = results.length; i < this.#MAX_RESULT_COUNT; i++) {
-      const viewElem = document.getElementById(this.#RESULT_VIEW_ELEM_ID_STEM + i.toString());
-      if (viewElem !== null)
-        viewElem.style.display = "none";
+        viewElem.style.display = "block";
+      }
+
+      // Hide the remaining unused result elements.
+      for (let i = results[l].length; i < this.#MAX_RESULT_COUNT; i++) {
+        const viewElem = document.getElementById(this.#RESULT_VIEW_ELEM_ID_STEM + l.toString() + i.toString());
+        if (viewElem !== null)
+          viewElem.style.display = "none";
+      }
     }
   }
 

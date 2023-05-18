@@ -217,8 +217,13 @@ export class MainViewController implements MainViewControllable {
         const rankedCitationData: any[] = response["ranked_citation_resources"];
 
         if (this.#view !== undefined) {
-          const procTimeText = `Loaded ${rankedDatabaseData.length} results in ${procTime.toFixed(3)} seconds.`
-          this.#view.updateResultViews(rankedDatabaseData);
+          const resultLength = rankedExistingData.length + rankedDatabaseData.length + rankedCitationData.length;
+          const procTimeText = `Loaded ${resultLength} results in ${procTime.toFixed(3)} seconds.`
+          this.#view.updateResultViews([
+            rankedExistingData,
+            rankedDatabaseData,
+            rankedCitationData
+          ]);
           this.#view.updateLoadingView(false, procTimeText);
         }
       })
