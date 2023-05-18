@@ -181,7 +181,7 @@ export class MainViewController implements MainViewControllable {
     const targetItem = this.#getCurrZoteroItem();
     const targetData = [this.#getDataFromZoteroItem(targetItem)];
     const existingRelatedItems = this.#getZoteroItemsInCurrCollection();
-    const existingRelatedData = existingRelatedItems.map(item => {
+    const existingData = existingRelatedItems.map(item => {
       return this.#getDataFromZoteroItem(item);
     });
     const filter = this.#getRecoFilter(targetData);
@@ -199,8 +199,8 @@ export class MainViewController implements MainViewControllable {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        "targets": targetData,
-        "existing_related": existingRelatedData,
+        "target_resources": targetData,
+        "existing_resources": existingData,
         "filter": filter
       })
     })
@@ -211,12 +211,14 @@ export class MainViewController implements MainViewControllable {
       })
       .then((response: Response) => response.json())
       .then((response: any) => {
-        const procTime: number = response["proc_time"];
-        const results: any[] = response["related"];
+        const procTime: number = response["processing_time"];
+        const rankedExistingData: any[] = response["ranked_existing_resources"];
+        const rankedDatabaseData: any[] = response["ranked_database_resources"];
+        const rankedCitationData: any[] = response["ranked_citation_resources"];
 
         if (this.#view !== undefined) {
-          const procTimeText = `Loaded ${results.length} results in ${procTime.toFixed(3)} seconds.`
-          this.#view.updateResultViews(results);
+          const procTimeText = `Loaded ${rankedDatabaseData.length} results in ${procTime.toFixed(3)} seconds.`
+          this.#view.updateResultViews(rankedDatabaseData);
           this.#view.updateLoadingView(false, procTimeText);
         }
       })
