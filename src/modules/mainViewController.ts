@@ -2,6 +2,8 @@ import { MainViewControllable, MainView } from "./mainView";
 import { CustomLogger } from "./customLogger";
 
 export class MainViewController implements MainViewControllable {
+  #recoArxivRsDbAllowed = false;
+  #recoIeeeXploreRsDbAllowed = false;
   #recoAuthorsFiltered = false;
   #recoConfNameFiltered = false;
 
@@ -139,10 +141,36 @@ export class MainViewController implements MainViewControllable {
    * @param view: The view that is controlled by this controller.
    */
   bindToView(view: MainView) {
+    view.addRecoArxivRsDbListener(this);
+    view.addRecoIeeeXploreRsDbListener(this);
     view.addRecoAuthorsFilterListener(this);
     view.addRecoConfNameFilterListener(this);
     view.addRecoButtonListener(this);
     this.#view = view;
+  }
+
+  /**
+   * A callback function for when the ArXiv database filter is clicked.
+   */
+  onRecoArxivRsDbClicked(checked: boolean) {
+    this.#recoArxivRsDbAllowed = checked;
+    CustomLogger.log(
+      `ArXiv database allowed in recommendations: ${checked}`,
+      "warning",
+      "MainViewController"
+    );
+  }
+
+  /**
+   * A callback function for when the IEEE Xplore database filter is clicked.
+   */
+  onRecoIeeeXploreRsDbClicked(checked: boolean) {
+    this.#recoIeeeXploreRsDbAllowed = checked;
+    CustomLogger.log(
+      `IEEE Xplore database allowed in recommendations: ${checked}`,
+      "warning",
+      "MainViewController"
+    );
   }
 
   /**
@@ -186,6 +214,12 @@ export class MainViewController implements MainViewControllable {
     });
     const filter = this.#getRecoFilter(targetData);
 
+    let resourceDatabases = [];
+    if (this.#recoArxivRsDbAllowed)
+      resourceDatabases.push("arxiv");
+    if (this.#recoIeeeXploreRsDbAllowed)
+      resourceDatabases.push("ieeexplore");
+
     const apiUrl = this.#getApiUrlBase() + "/recommend";
     CustomLogger.log(
       `Sending POST request to ${apiUrl}`,
@@ -201,7 +235,8 @@ export class MainViewController implements MainViewControllable {
       body: JSON.stringify({
         "target_resources": targetData,
         "existing_resources": existingData,
-        "filter": filter
+        "filter": filter,
+        "resource_databases": resourceDatabases
       })
     })
       .then((response: Response) => {

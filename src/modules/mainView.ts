@@ -18,6 +18,8 @@ interface Result {
  * The methods a controller for the main view needs to implement.
  */
 interface MainViewControllable {
+  onRecoArxivRsDbClicked(checked: boolean): void;
+  onRecoIeeeXploreRsDbClicked(checked: boolean): void;
   onRecoAuthorsFilterClicked(checked: boolean): void;
   onRecoConfNameFilterClicked(checked: boolean): void;
   onRecoButtonClicked(): void;
@@ -30,6 +32,8 @@ class MainView {
     getString("polarrec.reco.resultlist.database"),
     getString("polarrec.reco.resultlist.citation")
   ];
+  #RECO_ARXIV_RS_DB_ELEM_ID = "polarrec-reco-arxiv-rs-db";
+  #RECO_IEEE_XPLORE_RS_DB_ELEM_ID = "polarrec-reco-ieee-xplore-rs-db";
   #RECO_AUTHORS_FILTER_ELEM_ID = "polarrec-reco-authors-filter";
   #RECO_CONF_NAME_FILTER_ELEM_ID = "polarrec-reco-conf-name-filter";
   #RECO_BUTTON_ELEM_ID = "polarrec-reco-button";
@@ -126,6 +130,26 @@ class MainView {
         },
         properties: {
           innerText: getString("polarrec.reco.inst"),
+        },
+      },
+      {
+        tag: "h3",
+        properties: {
+          innerText: getString("polarrec.reco.rsdb.inst"),
+        },
+      },
+      this.#getRecoFilterElem(
+        this.#RECO_ARXIV_RS_DB_ELEM_ID,
+        "ArXiv",
+      ),
+      this.#getRecoFilterElem(
+        this.#RECO_IEEE_XPLORE_RS_DB_ELEM_ID,
+        "IEEE Xplore",
+      ),
+      {
+        tag: "h3",
+        properties: {
+          innerText: getString("polarrec.reco.filter.inst"),
         },
       },
       this.#getRecoFilterElem(
@@ -311,6 +335,38 @@ class MainView {
           viewElem.style.display = "none";
       }
     }
+  }
+
+  /**
+   * This must be called after this view has been registered.
+   *
+   * @param controller: The controller to this View.
+   */
+  addRecoArxivRsDbListener(controller: MainViewControllable) {
+    const recoFilter = document.getElementById(this.#RECO_ARXIV_RS_DB_ELEM_ID);
+    if (recoFilter === null)
+      return;
+
+    recoFilter.addEventListener("change", event => {
+      const filter = event.currentTarget as HTMLInputElement;
+      controller.onRecoArxivRsDbClicked(filter === null ? false : filter.checked);
+    });
+  }
+
+  /**
+   * This must be called after this view has been registered.
+   *
+   * @param controller: The controller to this View.
+   */
+  addRecoIeeeXploreRsDbListener(controller: MainViewControllable) {
+    const recoFilter = document.getElementById(this.#RECO_IEEE_XPLORE_RS_DB_ELEM_ID);
+    if (recoFilter === null)
+      return;
+
+    recoFilter.addEventListener("change", event => {
+      const filter = event.currentTarget as HTMLInputElement;
+      controller.onRecoIeeeXploreRsDbClicked(filter === null ? false : filter.checked);
+    });
   }
 
   /**
