@@ -28,7 +28,7 @@ interface MainViewControllable {
 
 class MainView {
   #MAX_RESULT_COUNT = 50;
-  #RESULT_SECTION_NAMES = [
+  #RESULTS_SECTION_NAMES = [
     getString("polarrec.reco.resultlist.existing"),
     getString("polarrec.reco.resultlist.database"),
     getString("polarrec.reco.resultlist.citation")
@@ -39,7 +39,7 @@ class MainView {
   #RECO_CONF_NAME_FILTER_ELEM_ID = "polarrec-reco-conf-name-filter";
   #RECO_BUTTON_ELEM_ID = "polarrec-reco-button";
   #LOADING_VIEW_ELEM_ID = "polarrec-reco-loading-view";
-  #RESULT_SECTION_ELEM_IDS = [
+  #RESULTS_SECTION_ELEM_IDS = [
     "polarrec-reco-result-section-existing",
     "polarrec-reco-result-section-database",
     "polarrec-reco-result-section-citation",
@@ -191,11 +191,11 @@ class MainView {
     ]
 
     // Add multiple lists of results to the View.
-    for (let l = 0; l < this.#RESULT_SECTION_NAMES.length; l++) {
+    for (let l = 0; l < this.#RESULTS_SECTION_NAMES.length; l++) {
       // @ts-ignore
       mainViewElems.push({
         tag: "h3",
-        id: this.#RESULT_SECTION_ELEM_IDS[l],
+        id: this.#RESULTS_SECTION_ELEM_IDS[l],
         styles: {
           "display": "none",
           // @ts-ignore
@@ -203,7 +203,7 @@ class MainView {
           "background-color": "lavender",
         },
         properties: {
-          innerText: this.#RESULT_SECTION_NAMES[l],
+          innerText: this.#RESULTS_SECTION_NAMES[l],
         },
       });
 
@@ -309,10 +309,10 @@ class MainView {
     if (results.length === 0)
       // Create an empty array for each result list.
       // This is to prevent out-of-range array accesses in the steps below.
-      results = Array(this.#RESULT_SECTION_NAMES.length).fill([]);
+      results = Array(this.#RESULTS_SECTION_NAMES.length).fill([]);
 
-    for (let l = 0; l < this.#RESULT_SECTION_NAMES.length; l++) {
-      const sectionElem = document.getElementById(this.#RESULT_SECTION_ELEM_IDS[l]);
+    for (let l = 0; l < this.#RESULTS_SECTION_NAMES.length; l++) {
+      const sectionElem = document.getElementById(this.#RESULTS_SECTION_ELEM_IDS[l]);
       if (sectionElem === null)
         continue;
       sectionElem.style.display = results[l].length === 0 ? "none" : "block";
