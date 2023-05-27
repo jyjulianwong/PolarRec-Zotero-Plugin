@@ -253,7 +253,7 @@ export class MainViewController implements MainViewControllable {
 
         if (this.#view !== undefined) {
           const resultLength = rankedExistingData.length + rankedDatabaseData.length + rankedCitationData.length;
-          const procTimeText = `Loaded ${resultLength} results in ${procTime.toFixed(3)} seconds.`
+          const procTimeText = `Loaded ${resultLength} results in ${procTime.toFixed(3)} seconds for "${targetItem.getField("title").toString()}".`
           this.#view.updateResultViews([
             rankedExistingData,
             rankedDatabaseData,
