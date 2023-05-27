@@ -39,6 +39,11 @@ class MainView {
   #RECO_CONF_NAME_FILTER_ELEM_ID = "polarrec-reco-conf-name-filter";
   #RECO_BUTTON_ELEM_ID = "polarrec-reco-button";
   #LOADING_VIEW_ELEM_ID = "polarrec-reco-loading-view";
+  #RESULT_SECTION_ELEM_IDS = [
+    "polarrec-reco-result-section-existing",
+    "polarrec-reco-result-section-database",
+    "polarrec-reco-result-section-citation",
+  ];
   #RESULT_VIEW_ELEM_ID_STEM = "polarrec-reco-result-view-";
   #RESULT_TITLE_ELEM_ID_STEM = "polarrec-reco-result-title-";
   #RESULT_AUTHORS_ELEM_ID_STEM = "polarrec-reco-result-authors-";
@@ -190,7 +195,9 @@ class MainView {
       // @ts-ignore
       mainViewElems.push({
         tag: "h3",
+        id: this.#RESULT_SECTION_ELEM_IDS[l],
         styles: {
+          "display": "none",
           // @ts-ignore
           "width": "100%",
           "background-color": "lavender",
@@ -305,6 +312,11 @@ class MainView {
       results = Array(this.#RESULT_SECTION_NAMES.length).fill([]);
 
     for (let l = 0; l < this.#RESULT_SECTION_NAMES.length; l++) {
+      const sectionElem = document.getElementById(this.#RESULT_SECTION_ELEM_IDS[l]);
+      if (sectionElem === null)
+        continue;
+      sectionElem.style.display = results[l].length === 0 ? "none" : "block";
+
       for (let i = 0; i < results[l].length; i++) {
         const viewElem = document.getElementById(this.#RESULT_VIEW_ELEM_ID_STEM + l.toString() + i.toString());
         const titleElem = document.getElementById(this.#RESULT_TITLE_ELEM_ID_STEM + l.toString() + i.toString());
