@@ -28,7 +28,7 @@ interface MainViewControllable {
 
 class MainView {
   #MAX_RESULT_COUNT = 50;
-  #RESULT_LIST_NAMES = [
+  #RESULT_SECTION_NAMES = [
     getString("polarrec.reco.resultlist.existing"),
     getString("polarrec.reco.resultlist.database"),
     getString("polarrec.reco.resultlist.citation")
@@ -186,12 +186,17 @@ class MainView {
     ]
 
     // Add multiple lists of results to the View.
-    for (let l = 0; l < this.#RESULT_LIST_NAMES.length; l++) {
+    for (let l = 0; l < this.#RESULT_SECTION_NAMES.length; l++) {
       // @ts-ignore
       mainViewElems.push({
         tag: "h3",
+        styles: {
+          // @ts-ignore
+          "width": "100%",
+          "background-color": "lavender",
+        },
         properties: {
-          innerText: this.#RESULT_LIST_NAMES[l],
+          innerText: this.#RESULT_SECTION_NAMES[l],
         },
       });
 
@@ -297,9 +302,9 @@ class MainView {
     if (results.length === 0)
       // Create an empty array for each result list.
       // This is to prevent out-of-range array accesses in the steps below.
-      results = Array(this.#RESULT_LIST_NAMES.length).fill([]);
+      results = Array(this.#RESULT_SECTION_NAMES.length).fill([]);
 
-    for (let l = 0; l < this.#RESULT_LIST_NAMES.length; l++) {
+    for (let l = 0; l < this.#RESULT_SECTION_NAMES.length; l++) {
       for (let i = 0; i < results[l].length; i++) {
         const viewElem = document.getElementById(this.#RESULT_VIEW_ELEM_ID_STEM + l.toString() + i.toString());
         const titleElem = document.getElementById(this.#RESULT_TITLE_ELEM_ID_STEM + l.toString() + i.toString());
