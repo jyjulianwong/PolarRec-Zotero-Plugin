@@ -11,6 +11,7 @@ interface Result {
   url: string;
   author_based_ranking: string;
   citation_based_ranking: string;
+  citation_count_ranking: string;
   keyword_based_ranking: string;
 }
 
@@ -45,6 +46,7 @@ class MainView {
   #RESULT_URL_ELEM_ID_STEM = "polarrec-reco-result-url-";
   #RESULT_AUTHOR_RANK_ELEM_ID_STEM = "polarrec-reco-result-author-rank-";
   #RESULT_CITATION_RANK_ELEM_ID_STEM = "polarrec-reco-result-citation-rank-";
+  #RESULT_CITCOUNT_RANK_ELEM_ID_STEM = "polarrec-reco-result-citcount-rank-";
   #RESULT_KEYWORD_RANK_ELEM_ID_STEM = "polarrec-reco-result-keyword-rank-";
 
   /**
@@ -237,6 +239,12 @@ class MainView {
               true
             ),
             this.#getResultFieldElem(
+              this.#RESULT_CITCOUNT_RANK_ELEM_ID_STEM + l.toString() + i.toString(),
+              "No Citation Count Ranking",
+              false,
+              true
+            ),
+            this.#getResultFieldElem(
               this.#RESULT_KEYWORD_RANK_ELEM_ID_STEM + l.toString() + i.toString(),
               "No Keyword-Based Ranking",
               false,
@@ -300,6 +308,7 @@ class MainView {
         const urlElem = document.getElementById(this.#RESULT_URL_ELEM_ID_STEM + l.toString() + i.toString());
         const authorRankElem = document.getElementById(this.#RESULT_AUTHOR_RANK_ELEM_ID_STEM + l.toString() + i.toString());
         const citationRankElem = document.getElementById(this.#RESULT_CITATION_RANK_ELEM_ID_STEM + l.toString() + i.toString());
+        const citCountRankElem = document.getElementById(this.#RESULT_CITCOUNT_RANK_ELEM_ID_STEM + l.toString() + i.toString());
         const keywordRankElem = document.getElementById(this.#RESULT_KEYWORD_RANK_ELEM_ID_STEM + l.toString() + i.toString());
         if (
           viewElem === null ||
@@ -309,6 +318,7 @@ class MainView {
           urlElem === null ||
           authorRankElem === null ||
           citationRankElem === null ||
+          citCountRankElem === null ||
           keywordRankElem === null
         )
           continue;
@@ -323,6 +333,7 @@ class MainView {
         urlElem.setAttribute("value", results[l][i].url);
         authorRankElem.setAttribute("value", `Author-based ranking:\t${results[l][i].author_based_ranking}`);
         citationRankElem.setAttribute("value", `Citation-based ranking:\t${results[l][i].citation_based_ranking}`);
+        citCountRankElem.setAttribute("value", `Citation count ranking:\t${results[l][i].citation_count_ranking}`);
         keywordRankElem.setAttribute("value", `Keyword-based ranking:\t${results[l][i].keyword_based_ranking}`);
 
         viewElem.style.display = "block";
