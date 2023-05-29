@@ -1,6 +1,6 @@
 {
   "name": "polarrec-zotero-plugin",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "Provides the PolarRec service within the Zotero UI",
   "config": {
     "addonName": "PolarRec (Zotero Plugin)",
