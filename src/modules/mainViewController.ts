@@ -1,5 +1,6 @@
 import { MainViewControllable, MainView } from "./mainView";
 import { CustomLogger } from "./customLogger";
+import ZoteroToolkit from "zotero-plugin-toolkit/dist/index";
 
 export class MainViewController implements MainViewControllable {
   #recoArxivRsDbAllowed = false;
@@ -31,14 +32,17 @@ export class MainViewController implements MainViewControllable {
   }
 
   /**
-   * @returns All Zotero Items contained in the currently selected Collection.
+   * @returns All Zotero Items currently in view, e.g. the selected Collection.
    * @private
    */
-  #getZoteroItemsInCurrCollection(): Zotero.Item[] {
-    const collection = ZoteroPane.getSelectedCollection();
-    if (collection === undefined)
-      return [];
-    return collection.getChildItems();
+  #getZoteroItemsInCurrView(): Zotero.Item[] {
+    const items = ZoteroPane.getSortedItems();
+    CustomLogger.log(
+      `Found ${items.length} Zotero.Items in current view`,
+      "warning",
+      "MainViewController"
+    );
+    return items;
   }
 
   /**
@@ -180,7 +184,7 @@ export class MainViewController implements MainViewControllable {
 
         if (this.#view !== undefined) {
           const resultLength = rankedExistingData.length + rankedDatabaseData.length + rankedCitationData.length;
-          const targetText = targetItems.length == 1 ? `"${targetItems[0].getField("title").toString()}"` : `${targetItems.length} items`;
+          const targetText = targetItems.length === 1 ? `"${targetItems[0].getField("title").toString()}"` : `${targetItems.length} items`;
           const procTimeText = `Loaded ${resultLength} results in ${procTime.toFixed(3)} seconds for ${targetText}.`
           this.#view.updateResultViews([
             rankedExistingData,
@@ -210,7 +214,7 @@ export class MainViewController implements MainViewControllable {
     view.addRecoAuthorsFilterListener(this);
     view.addRecoConfNameFilterListener(this);
     view.addRecoItemButtonListener(this);
-    view.addRecoCollectionButtonListener(this);
+    view.addRecoItemsInViewButtonListener(this);
     this.#view = view;
   }
 
@@ -272,21 +276,21 @@ export class MainViewController implements MainViewControllable {
     }
 
     const targetItems = [this.#getCurrZoteroItem()];
-    const existingItems = this.#getZoteroItemsInCurrCollection();
+    const existingItems = this.#getZoteroItemsInCurrView();
     this.#sendRecoRequest(targetItems, existingItems);
   }
 
   /**
-   * A callback function for when the recommendation for entire collection
-   * button is clicked.
+   * A callback function for when the recommendation button for all items in
+   * view is clicked.
    */
-  onRecoCollectionButtonClicked() {
+  onRecoItemsInViewButtonClicked() {
     if (this.#view !== undefined) {
       this.#view.updateResultViews([]);
       this.#view.updateLoadingView(true);
     }
 
-    const targetItems = this.#getZoteroItemsInCurrCollection();
+    const targetItems = this.#getZoteroItemsInCurrView();
     this.#sendRecoRequest(targetItems, []);
   }
 }
