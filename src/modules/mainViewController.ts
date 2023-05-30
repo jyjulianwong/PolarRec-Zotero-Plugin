@@ -132,6 +132,70 @@ export class MainViewController implements MainViewControllable {
     return filter;
   }
 
+  #sendRecoRequest(targetItems: Zotero.Item[], existingItems: Zotero.Item[]) {
+    const targetData = targetItems.map(item => {
+      return this.#getDataFromZoteroItem(item);
+    });
+    const existingData = existingItems.map(item => {
+      return this.#getDataFromZoteroItem(item);
+    });
+    const filter = this.#getRecoFilter(targetData);
+
+    let resourceDatabases = [];
+    if (this.#recoArxivRsDbAllowed)
+      resourceDatabases.push("arxiv");
+    if (this.#recoIeeeXploreRsDbAllowed)
+      resourceDatabases.push("ieeexplore");
+
+    const apiUrl = this.#getApiUrlBase() + "/recommend";
+    CustomLogger.log(
+      `Sending POST request to ${apiUrl}`,
+      "warning",
+      "MainViewController"
+    );
+    window.fetch(apiUrl, {
+      method: "POST",
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        "target_resources": targetData,
+        "existing_resources": existingData,
+        "filter": filter,
+        "resource_databases": resourceDatabases
+      })
+    })
+      .then((response: Response) => {
+        if (!response.ok)
+          throw Error(`${apiUrl}: ${response.status}: ${response.statusText}`);
+        return response;
+      })
+      .then((response: Response) => response.json())
+      .then((response: any) => {
+        const procTime: number = response["processing_time"];
+        const rankedExistingData: any[] = response["ranked_existing_resources"];
+        const rankedDatabaseData: any[] = response["ranked_database_resources"];
+        const rankedCitationData: any[] = response["ranked_citation_resources"];
+
+        if (this.#view !== undefined) {
+          const resultLength = rankedExistingData.length + rankedDatabaseData.length + rankedCitationData.length;
+          const targetText = targetItems.length == 1 ? `"${targetItems[0].getField("title").toString()}"` : `${targetItems.length} items`;
+          const procTimeText = `Loaded ${resultLength} results in ${procTime.toFixed(3)} seconds for ${targetText}.`
+          this.#view.updateResultViews([
+            rankedExistingData,
+            rankedDatabaseData,
+            rankedCitationData
+          ]);
+          this.#view.updateLoadingView(false, procTimeText);
+        }
+      })
+      .catch((error: any) => {
+        if (this.#view !== undefined)
+          this.#view.updateLoadingView(false, error.toString());
+      });
+  }
+
   constructor() {}
 
   /**
@@ -145,7 +209,8 @@ export class MainViewController implements MainViewControllable {
     view.addRecoIeeeXploreRsDbListener(this);
     view.addRecoAuthorsFilterListener(this);
     view.addRecoConfNameFilterListener(this);
-    view.addRecoButtonListener(this);
+    view.addRecoItemButtonListener(this);
+    view.addRecoCollectionButtonListener(this);
     this.#view = view;
   }
 
@@ -200,71 +265,28 @@ export class MainViewController implements MainViewControllable {
   /**
    * A callback function for when the recommendation button is clicked.
    */
-  onRecoButtonClicked() {
+  onRecoItemButtonClicked() {
     if (this.#view !== undefined) {
       this.#view.updateResultViews([]);
       this.#view.updateLoadingView(true);
     }
 
-    const targetItem = this.#getCurrZoteroItem();
-    const targetData = [this.#getDataFromZoteroItem(targetItem)];
-    const existingRelatedItems = this.#getZoteroItemsInCurrCollection();
-    const existingData = existingRelatedItems.map(item => {
-      return this.#getDataFromZoteroItem(item);
-    });
-    const filter = this.#getRecoFilter(targetData);
+    const targetItems = [this.#getCurrZoteroItem()];
+    const existingItems = this.#getZoteroItemsInCurrCollection();
+    this.#sendRecoRequest(targetItems, existingItems);
+  }
 
-    let resourceDatabases = [];
-    if (this.#recoArxivRsDbAllowed)
-      resourceDatabases.push("arxiv");
-    if (this.#recoIeeeXploreRsDbAllowed)
-      resourceDatabases.push("ieeexplore");
+  /**
+   * A callback function for when the recommendation for entire collection
+   * button is clicked.
+   */
+  onRecoCollectionButtonClicked() {
+    if (this.#view !== undefined) {
+      this.#view.updateResultViews([]);
+      this.#view.updateLoadingView(true);
+    }
 
-    const apiUrl = this.#getApiUrlBase() + "/recommend";
-    CustomLogger.log(
-      `Sending POST request to ${apiUrl}`,
-      "warning",
-      "MainViewController"
-    );
-    window.fetch(apiUrl, {
-      method: "POST",
-      headers: {
-        "Accept": "application/json",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        "target_resources": targetData,
-        "existing_resources": existingData,
-        "filter": filter,
-        "resource_databases": resourceDatabases
-      })
-    })
-      .then((response: Response) => {
-        if (!response.ok)
-          throw Error(`${apiUrl}: ${response.status}: ${response.statusText}`);
-        return response;
-      })
-      .then((response: Response) => response.json())
-      .then((response: any) => {
-        const procTime: number = response["processing_time"];
-        const rankedExistingData: any[] = response["ranked_existing_resources"];
-        const rankedDatabaseData: any[] = response["ranked_database_resources"];
-        const rankedCitationData: any[] = response["ranked_citation_resources"];
-
-        if (this.#view !== undefined) {
-          const resultLength = rankedExistingData.length + rankedDatabaseData.length + rankedCitationData.length;
-          const procTimeText = `Loaded ${resultLength} results in ${procTime.toFixed(3)} seconds for "${targetItem.getField("title").toString()}".`
-          this.#view.updateResultViews([
-            rankedExistingData,
-            rankedDatabaseData,
-            rankedCitationData
-          ]);
-          this.#view.updateLoadingView(false, procTimeText);
-        }
-      })
-      .catch((error: any) => {
-        if (this.#view !== undefined)
-          this.#view.updateLoadingView(false, error.toString());
-      });
+    const targetItems = this.#getZoteroItemsInCurrCollection();
+    this.#sendRecoRequest(targetItems, []);
   }
 }

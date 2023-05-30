@@ -23,7 +23,8 @@ interface MainViewControllable {
   onRecoIeeeXploreRsDbClicked(checked: boolean): void;
   onRecoAuthorsFilterClicked(checked: boolean): void;
   onRecoConfNameFilterClicked(checked: boolean): void;
-  onRecoButtonClicked(): void;
+  onRecoItemButtonClicked(): void;
+  onRecoCollectionButtonClicked(): void;
 }
 
 class MainView {
@@ -37,7 +38,8 @@ class MainView {
   #RECO_IEEE_XPLORE_RS_DB_ELEM_ID = "polarrec-reco-ieee-xplore-rs-db";
   #RECO_AUTHORS_FILTER_ELEM_ID = "polarrec-reco-authors-filter";
   #RECO_CONF_NAME_FILTER_ELEM_ID = "polarrec-reco-conf-name-filter";
-  #RECO_BUTTON_ELEM_ID = "polarrec-reco-button";
+  #RECO_ITEM_BUTTON_ELEM_ID = "polarrec-reco-item-button";
+  #RECO_COLLECTION_BUTTON_ELEM_ID = "polarrec-reco-collection-button";
   #LOADING_VIEW_ELEM_ID = "polarrec-reco-loading-view";
   #RESULTS_SECTION_ELEM_IDS = [
     "polarrec-reco-result-section-existing",
@@ -169,13 +171,24 @@ class MainView {
       ),
       {
         tag: "button",
-        id: this.#RECO_BUTTON_ELEM_ID,
+        id: this.#RECO_ITEM_BUTTON_ELEM_ID,
         namespace: "html",
         styles: {
-          "margin": "10px 0px 20px 0px"
+          "margin": "10px 0px 0px 0px"
         },
         properties: {
-          innerText: getString("polarrec.reco.button"),
+          innerText: getString("polarrec.reco.item.button"),
+        },
+      },
+      {
+        tag: "button",
+        id: this.#RECO_COLLECTION_BUTTON_ELEM_ID,
+        namespace: "html",
+        styles: {
+          "margin": "0px 0px 20px 0px"
+        },
+        properties: {
+          innerText: getString("polarrec.reco.collection.button"),
         },
       },
       {
@@ -434,12 +447,25 @@ class MainView {
    *
    * @param controller: The controller to this View.
    */
-  addRecoButtonListener(controller: MainViewControllable) {
-    const recoButton = document.getElementById(this.#RECO_BUTTON_ELEM_ID);
+  addRecoItemButtonListener(controller: MainViewControllable) {
+    const recoButton = document.getElementById(this.#RECO_ITEM_BUTTON_ELEM_ID);
     if (recoButton === null)
       return;
 
-    recoButton.addEventListener("click", _ => controller.onRecoButtonClicked());
+    recoButton.addEventListener("click", _ => controller.onRecoItemButtonClicked());
+  }
+
+  /**
+   * This must be called after this view has been registered.
+   *
+   * @param controller: The controller to this View.
+   */
+  addRecoCollectionButtonListener(controller: MainViewControllable) {
+    const recoButton = document.getElementById(this.#RECO_COLLECTION_BUTTON_ELEM_ID);
+    if (recoButton === null)
+      return;
+
+    recoButton.addEventListener("click", _ => controller.onRecoCollectionButtonClicked());
   }
 }
 
