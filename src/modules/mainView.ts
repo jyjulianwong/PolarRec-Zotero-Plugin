@@ -185,7 +185,7 @@ class MainView {
         id: this.#RECO_COLLECTION_BUTTON_ELEM_ID,
         namespace: "html",
         styles: {
-          "margin": "0px 0px 20px 0px"
+          "margin": "5px 0px 20px 0px"
         },
         properties: {
           innerText: getString("polarrec.reco.collection.button"),
