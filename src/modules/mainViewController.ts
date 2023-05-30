@@ -1,6 +1,5 @@
 import { MainViewControllable, MainView } from "./mainView";
 import { CustomLogger } from "./customLogger";
-import ZoteroToolkit from "zotero-plugin-toolkit/dist/index";
 
 export class MainViewController implements MainViewControllable {
   #recoArxivRsDbAllowed = false;
