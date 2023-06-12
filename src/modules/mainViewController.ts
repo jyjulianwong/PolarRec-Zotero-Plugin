@@ -179,16 +179,14 @@ export class MainViewController implements MainViewControllable {
         const procTime: number = response["processing_time"];
         const rankedExistingData: any[] = response["ranked_existing_resources"];
         const rankedDatabaseData: any[] = response["ranked_database_resources"];
-        const rankedCitationData: any[] = response["ranked_citation_resources"];
 
         if (this.#view !== undefined) {
-          const resultLength = rankedExistingData.length + rankedDatabaseData.length + rankedCitationData.length;
+          const resultLength = rankedExistingData.length + rankedDatabaseData.length;
           const targetText = targetItems.length === 1 ? `"${targetItems[0].getField("title").toString()}"` : `${targetItems.length} items`;
           const procTimeText = `Loaded ${resultLength} results in ${procTime.toFixed(3)} seconds for ${targetText}.`
           this.#view.updateResultViews([
             rankedExistingData,
-            rankedDatabaseData,
-            rankedCitationData
+            rankedDatabaseData
           ]);
           this.#view.updateLoadingView(false, procTimeText);
         }

@@ -32,7 +32,6 @@ class MainView {
   #RESULTS_SECTION_NAMES = [
     getString("polarrec.reco.resultlist.existing"),
     getString("polarrec.reco.resultlist.database"),
-    getString("polarrec.reco.resultlist.citation")
   ];
   #RECO_ARXIV_RS_DB_ELEM_ID = "polarrec-reco-arxiv-rs-db";
   #RECO_IEEE_XPLORE_RS_DB_ELEM_ID = "polarrec-reco-ieee-xplore-rs-db";
@@ -44,7 +43,6 @@ class MainView {
   #RESULTS_SECTION_ELEM_IDS = [
     "polarrec-reco-result-section-existing",
     "polarrec-reco-result-section-database",
-    "polarrec-reco-result-section-citation",
   ];
   #RESULT_VIEW_ELEM_ID_STEM = "polarrec-reco-result-view-";
   #RESULT_TITLE_ELEM_ID_STEM = "polarrec-reco-result-title-";
