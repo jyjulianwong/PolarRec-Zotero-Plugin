@@ -17,6 +17,8 @@ interface Result {
 
 /**
  * The methods a controller for the main view needs to implement.
+ * These methods correspond to the callback events that are triggered by
+ * controls and buttons across the user interface of the main view.
  */
 interface MainViewControllable {
   onRecoArxivRsDbClicked(checked: boolean): void;
@@ -28,11 +30,14 @@ interface MainViewControllable {
 }
 
 class MainView {
+  // The maximum number of results to be displayed for each result section.
   #MAX_RESULT_COUNT = 50;
+  // The display names of each result section.
   #RESULTS_SECTION_NAMES = [
     getString("polarrec.reco.resultlist.existing"),
     getString("polarrec.reco.resultlist.database"),
   ];
+  // The HTML element IDs for various elements across the main view.
   #RECO_ARXIV_RS_DB_ELEM_ID = "polarrec-reco-arxiv-rs-db";
   #RECO_IEEE_XPLORE_RS_DB_ELEM_ID = "polarrec-reco-ieee-xplore-rs-db";
   #RECO_AUTHORS_FILTER_ELEM_ID = "polarrec-reco-authors-filter";
@@ -118,18 +123,21 @@ class MainView {
 
   /**
    * Registers the main view as a library tab panel.
+   * Builds all the elements contained in the main view in the process.
    *
    * @returns The panel tab ID of the view, used for the unregister process.
    */
   register() {
-    // Initialise the View with the name, instruction, and button elements.
+    // Initialise the view with the name, instruction, and button elements.
     const mainViewElems = [
+      // The display name of the Zotero plugin.
       {
         tag: "h2",
         properties: {
           innerText: getString("polarrec.name"),
         },
       },
+      // Instructions related to the usage of the plugin.
       {
         tag: "div",
         styles: {
@@ -139,6 +147,7 @@ class MainView {
           innerText: getString("polarrec.reco.inst"),
         },
       },
+      // Database-related filter controls.
       {
         tag: "h3",
         properties: {
@@ -153,6 +162,7 @@ class MainView {
         this.#RECO_IEEE_XPLORE_RS_DB_ELEM_ID,
         "IEEE Xplore",
       ),
+      // Result-related filter controls.
       {
         tag: "h3",
         properties: {
@@ -167,6 +177,7 @@ class MainView {
         this.#RECO_CONF_NAME_FILTER_ELEM_ID,
         getString("polarrec.reco.filter.confname"),
       ),
+      // Buttons to trigger the recommendation process.
       {
         tag: "button",
         id: this.#RECO_ITEM_BUTTON_ELEM_ID,
@@ -189,6 +200,7 @@ class MainView {
           innerText: getString("polarrec.reco.collection.button"),
         },
       },
+      // The status view that displays the loading status of the system.
       {
         tag: "div",
         id: this.#LOADING_VIEW_ELEM_ID,
@@ -201,8 +213,9 @@ class MainView {
       },
     ]
 
-    // Add multiple lists of results to the View.
+    // Add multiple lists (sections) of results to the view.
     for (let l = 0; l < this.#RESULTS_SECTION_NAMES.length; l++) {
+      // Add the display name of this list to the view.
       // @ts-ignore
       mainViewElems.push({
         tag: "h3",
@@ -218,7 +231,7 @@ class MainView {
         },
       });
 
-      // Add the result elements for this list to the View.
+      // Add the result elements for this list to the view.
       for (let i = 0; i < this.#MAX_RESULT_COUNT; i++) {
         mainViewElems.push({
           tag: "div",
@@ -226,6 +239,7 @@ class MainView {
           styles: {
             "display": "none"
           },
+          // Add the various data fields included in each result to the view.
           // @ts-ignore
           children: [
             {
@@ -278,7 +292,7 @@ class MainView {
       }
     }
 
-    // Register the View to the Zotero UI and return the panel tab ID.
+    // Register the view to the Zotero UI and return the panel tab ID.
     return ztoolkit.LibraryTabPanel.register(
       getString("polarrec.name"),
       (panel: XUL.Element, win: Window) => {
@@ -301,21 +315,38 @@ class MainView {
     );
   }
 
+  /**
+   * Updates the loading status in the status view.
+   *
+   * @param isLoading - Whether the system is currently loading or not.
+   * @param customText - An optional custom message the status view should
+   * display.
+   */
   updateLoadingView(isLoading: boolean, customText?: string) {
     const loadElem = document.getElementById(this.#LOADING_VIEW_ELEM_ID);
     if (loadElem === null)
       return;
 
     if (customText !== undefined) {
+      // Replace the default text with custom text.
       loadElem.innerText = customText;
+      // Show the element.
       loadElem.style.display = "block";
       return;
     }
 
+    // Set the text to the default loading text.
     loadElem.innerText = getString("polarrec.reco.load");
+    // Show the element if loading. Otherwise, hide the element.
     loadElem.style.display = isLoading ? "block" : "none";
   }
 
+  /**
+   * Clears or populates the results view.
+   *
+   * @param results - A 2D array, with the list of results for each result
+   * section.
+   */
   updateResultViews(results: Result[][]) {
     if (results.length === 0)
       // Create an empty array for each result list.
@@ -326,8 +357,10 @@ class MainView {
       const sectionElem = document.getElementById(this.#RESULTS_SECTION_ELEM_IDS[l]);
       if (sectionElem === null)
         continue;
+      // Hide the entire section view if there are no results for that section.
       sectionElem.style.display = results[l].length === 0 ? "none" : "block";
 
+      // Show all the result data in their respective result elements.
       for (let i = 0; i < results[l].length; i++) {
         const viewElem = document.getElementById(this.#RESULT_VIEW_ELEM_ID_STEM + l.toString() + i.toString());
         const titleElem = document.getElementById(this.#RESULT_TITLE_ELEM_ID_STEM + l.toString() + i.toString());
@@ -379,7 +412,7 @@ class MainView {
   /**
    * This must be called after this view has been registered.
    *
-   * @param controller: The controller to this View.
+   * @param controller: The controller to this view.
    */
   addRecoArxivRsDbListener(controller: MainViewControllable) {
     const recoFilter = document.getElementById(this.#RECO_ARXIV_RS_DB_ELEM_ID);
@@ -395,7 +428,7 @@ class MainView {
   /**
    * This must be called after this view has been registered.
    *
-   * @param controller: The controller to this View.
+   * @param controller: The controller to this view.
    */
   addRecoIeeeXploreRsDbListener(controller: MainViewControllable) {
     const recoFilter = document.getElementById(this.#RECO_IEEE_XPLORE_RS_DB_ELEM_ID);
@@ -411,7 +444,7 @@ class MainView {
   /**
    * This must be called after this view has been registered.
    *
-   * @param controller: The controller to this View.
+   * @param controller: The controller to this view.
    */
   addRecoAuthorsFilterListener(controller: MainViewControllable) {
     const recoFilter = document.getElementById(this.#RECO_AUTHORS_FILTER_ELEM_ID);
@@ -427,7 +460,7 @@ class MainView {
   /**
    * This must be called after this view has been registered.
    *
-   * @param controller: The controller to this View.
+   * @param controller: The controller to this view.
    */
   addRecoConfNameFilterListener(controller: MainViewControllable) {
     const recoFilter = document.getElementById(this.#RECO_CONF_NAME_FILTER_ELEM_ID);
@@ -443,7 +476,7 @@ class MainView {
   /**
    * This must be called after this view has been registered.
    *
-   * @param controller: The controller to this View.
+   * @param controller: The controller to this view.
    */
   addRecoItemButtonListener(controller: MainViewControllable) {
     const recoButton = document.getElementById(this.#RECO_ITEM_BUTTON_ELEM_ID);
@@ -456,7 +489,7 @@ class MainView {
   /**
    * This must be called after this view has been registered.
    *
-   * @param controller: The controller to this View.
+   * @param controller: The controller to this view.
    */
   addRecoItemsInViewButtonListener(controller: MainViewControllable) {
     const recoButton = document.getElementById(this.#RECO_ITEMS_IN_VIEW_BUTTON_ELEM_ID);

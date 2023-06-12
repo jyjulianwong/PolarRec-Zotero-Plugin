@@ -2,6 +2,7 @@ import { MainViewControllable, MainView } from "./mainView";
 import { CustomLogger } from "./customLogger";
 
 export class MainViewController implements MainViewControllable {
+  // State variables for the filters and controls on the main view.
   #recoArxivRsDbAllowed = false;
   #recoIeeeXploreRsDbAllowed = false;
   #recoAuthorsFiltered = false;
@@ -31,7 +32,7 @@ export class MainViewController implements MainViewControllable {
   }
 
   /**
-   * @returns All Zotero Items currently in view, e.g. the selected Collection.
+   * @returns All Zotero items currently in view, e.g. the selected collection.
    * @private
    */
   #getZoteroItemsInCurrView(): Zotero.Item[] {
@@ -85,6 +86,7 @@ export class MainViewController implements MainViewControllable {
    * @private
    */
   #getDataFromZoteroItem(item: Zotero.Item): any {
+    // Extract all necessary information from the Zotero item.
     const authors = this.#getAuthorsFromZoteroItem(item);
     const conferenceName = item.getField("conferenceName").toString();
     const conferenceLocation = item.getField("place").toString();
@@ -94,6 +96,8 @@ export class MainViewController implements MainViewControllable {
     const doi = item.getField("DOI").toString();
     const url = item.getField("url").toString();
 
+    // Conduct checks for any null or empty values.
+    // Do not include empty values into the data object.
     const data: any = {};
     if (authors.length !== 0)
       data.authors = authors;
@@ -126,11 +130,11 @@ export class MainViewController implements MainViewControllable {
     const filter: any = {};
     if (targetData[0].hasOwnProperty("authors"))
       if (this.#recoAuthorsFiltered)
-        // TODO: Extract authors for all target items.
+        // FIXME: Extract authors for all target items instead of the first one.
         filter.authors = targetData[0].authors;
     if (targetData[0].hasOwnProperty("conference_name"))
       if (this.#recoConfNameFiltered)
-        // TODO: Extract conference names for all target items.
+        // FIXME: Extract conference names for all target items instead of the first one.
         filter.conference_name = targetData[0].conference_name;
     return filter;
   }
@@ -144,12 +148,14 @@ export class MainViewController implements MainViewControllable {
     });
     const filter = this.#getRecoFilter(targetData);
 
+    // Check which of the resource databases the user has allowed in the filter.
     let resourceDatabases = [];
     if (this.#recoArxivRsDbAllowed)
       resourceDatabases.push("arxiv");
     if (this.#recoIeeeXploreRsDbAllowed)
       resourceDatabases.push("ieeexplore");
 
+    // Trigger the recommendation process through the PolarRec web API.
     const apiUrl = this.#getApiUrlBase() + "/recommend";
     CustomLogger.log(
       `Sending POST request to ${apiUrl}`,
@@ -176,6 +182,7 @@ export class MainViewController implements MainViewControllable {
       })
       .then((response: Response) => response.json())
       .then((response: any) => {
+        // The API response has been successfully received.
         const procTime: number = response["processing_time"];
         const rankedExistingData: any[] = response["ranked_existing_resources"];
         const rankedDatabaseData: any[] = response["ranked_database_resources"];
@@ -184,10 +191,12 @@ export class MainViewController implements MainViewControllable {
           const resultLength = rankedExistingData.length + rankedDatabaseData.length;
           const targetText = targetItems.length === 1 ? `"${targetItems[0].getField("title").toString()}"` : `${targetItems.length} items`;
           const procTimeText = `Loaded ${resultLength} results in ${procTime.toFixed(3)} seconds for ${targetText}.`
+          // Populate the results view.
           this.#view.updateResultViews([
             rankedExistingData,
             rankedDatabaseData
           ]);
+          // Show the processing time of the API request.
           this.#view.updateLoadingView(false, procTimeText);
         }
       })
@@ -216,12 +225,12 @@ export class MainViewController implements MainViewControllable {
   }
 
   /**
-   * A callback function for when the ArXiv database filter is clicked.
+   * A callback function for when the arXiv database filter is clicked.
    */
   onRecoArxivRsDbClicked(checked: boolean) {
     this.#recoArxivRsDbAllowed = checked;
     CustomLogger.log(
-      `ArXiv database allowed in recommendations: ${checked}`,
+      `arXiv database allowed in recommendations: ${checked}`,
       "warning",
       "MainViewController"
     );
@@ -268,7 +277,9 @@ export class MainViewController implements MainViewControllable {
    */
   onRecoItemButtonClicked() {
     if (this.#view !== undefined) {
+      // Clear any lingering results from the last recommendation process.
       this.#view.updateResultViews([]);
+      // Show that the recommender system is loading.
       this.#view.updateLoadingView(true);
     }
 
@@ -283,10 +294,13 @@ export class MainViewController implements MainViewControllable {
    */
   onRecoItemsInViewButtonClicked() {
     if (this.#view !== undefined) {
+      // Clear any lingering results from the last recommendation process.
       this.#view.updateResultViews([]);
+      // Show that the recommender system is loading.
       this.#view.updateLoadingView(true);
     }
 
+    // All items currently in view are considered "targets".
     const targetItems = this.#getZoteroItemsInCurrView();
     this.#sendRecoRequest(targetItems, []);
   }
