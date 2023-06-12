@@ -71,7 +71,7 @@ export class MainViewController implements MainViewControllable {
    */
   #getYearFromZoteroItem(item: Zotero.Item): string {
     const itemDate = item.getField("date").toString();
-    const candidates = itemDate.match(/[^\d]\d{4}[^\d]/);
+    const candidates = itemDate.match(/\b\d{4}\b/g);
     if (candidates === null || candidates.length === 0)
       return "";
     return candidates[0];
