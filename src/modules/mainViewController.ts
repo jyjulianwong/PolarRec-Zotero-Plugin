@@ -296,6 +296,7 @@ export class MainViewController implements MainViewControllable {
     view.addRecoConfNameFilterListener(this);
     view.addRecoItemButtonListener(this);
     view.addRecoItemsInViewButtonListener(this);
+    view.addResultUrlButtonListener(this);
     this.#view = view;
   }
 

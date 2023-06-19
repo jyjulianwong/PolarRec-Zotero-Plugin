@@ -58,6 +58,7 @@ class MainView {
   #RESULT_CITATION_RANK_ELEM_ID_STEM = "polarrec-reco-result-citation-rank-";
   #RESULT_CITCOUNT_RANK_ELEM_ID_STEM = "polarrec-reco-result-citcount-rank-";
   #RESULT_KEYWORD_RANK_ELEM_ID_STEM = "polarrec-reco-result-keyword-rank-";
+  #RESULT_URL_BUTTON_ELEM_ID_STEM = "polarrec-reco-result-url-button-";
 
   /**
    * Builds a checkbox-style recommendation filter element.
@@ -287,6 +288,18 @@ class MainView {
               false,
               true
             ),
+            {
+              tag: "button",
+              id: this.#RESULT_URL_BUTTON_ELEM_ID_STEM + l.toString() + i.toString(),
+              namespace: "html",
+              styles: {
+                "width": "100%",
+                "margin": "5px 0px 0px 0px",
+              },
+              properties: {
+                innerText: getString("polarrec.reco.result.viewonline"),
+              },
+            },
           ]
         })
       }
@@ -510,6 +523,33 @@ class MainView {
       return;
 
     recoButton.addEventListener("click", _ => controller.onRecoItemsInViewButtonClicked());
+  }
+
+  /**
+   * This must be called after this view has been registered.
+   *
+   * @param controller: The controller to this view.
+   */
+  addResultUrlButtonListener(controller: MainViewControllable) {
+    for (let l = 0; l < this.#RESULTS_SECTION_NAMES.length; l++) {
+      for (let i = 0; i < this.#MAX_RESULT_COUNT; i++) {
+        const urlButtomElem = document.getElementById(this.#RESULT_URL_BUTTON_ELEM_ID_STEM + l.toString() + i.toString());
+        if (urlButtomElem === null)
+          continue;
+
+        urlButtomElem.addEventListener("click", _ => {
+          const urlElem = document.getElementById(this.#RESULT_URL_ELEM_ID_STEM + l.toString() + i.toString());
+          if (urlElem === null)
+            return;
+
+          const urlString = urlElem.getAttribute("value");
+          if (urlString === null || urlString === "No URL")
+            return;
+
+          Zotero.getActiveZoteroPane().loadURI(urlString);
+        });
+      }
+    }
   }
 }
 
