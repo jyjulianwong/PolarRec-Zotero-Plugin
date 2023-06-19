@@ -385,13 +385,26 @@ class MainView {
           continue;
 
         titleElem.setAttribute("value", results[l][i].title);
-        authorsElem.setAttribute(
-          "value",
-          results[l][i].authors
-            .reduce((text: string, author: string) => text + ", " + author)
-        );
-        yearElem.setAttribute("value", results[l][i].year);
-        urlElem.setAttribute("value", results[l][i].url);
+
+        if (results[l][i].authors !== undefined)
+          authorsElem.setAttribute(
+            "value",
+            results[l][i].authors
+              .reduce((text: string, author: string) => text + ", " + author)
+          );
+        else
+          authorsElem.setAttribute("value", results[l][i].year);
+
+        if (results[l][i].year !== undefined)
+          yearElem.setAttribute("value", results[l][i].year);
+        else
+          yearElem.setAttribute("value", "No Year");
+
+        if (results[l][i].url !== undefined)
+          urlElem.setAttribute("value", results[l][i].url);
+        else
+          urlElem.setAttribute("value", "No URL");
+
         authorRankElem.setAttribute("value", `Author-based ranking:\t${results[l][i].author_based_ranking}`);
         citationRankElem.setAttribute("value", `Citation-based ranking:\t${results[l][i].citation_based_ranking}`);
         citCountRankElem.setAttribute("value", `Citation count ranking:\t${results[l][i].citation_count_ranking}`);
