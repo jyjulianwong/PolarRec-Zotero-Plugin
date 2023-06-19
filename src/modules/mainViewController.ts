@@ -24,6 +24,25 @@ export class MainViewController implements MainViewControllable {
   }
 
   /**
+   * A helper function that extracts text in between <p> and </p> tags in HTML
+   * documents.
+   *
+   * @param htmlString - The contents of the HTML document as a singular string.
+   * @returns The extracted text in between <p> and </p> tags.
+   * @private
+   */
+  #getHtmlPTagText(htmlString: string): string {
+    // Identify tokens that are placed between <p> and </p> tags.
+    const pTagTokens = htmlString.match(/<p\b[^>]*>(.*?)<\/p>/g);
+    if (pTagTokens === null)
+      // No <p> text exists in the HTML document.
+      return "";
+    else
+      // Remove the <p> and </p> tags and return the inner-text.
+      return pTagTokens.join(" ").replace(/<[^>]+>/g, "");
+  }
+
+  /**
    * @returns The currently selected Zotero Item.
    * @private
    */
@@ -85,7 +104,7 @@ export class MainViewController implements MainViewControllable {
    * @returns The JSON object to be sent to the PolarRec API.
    * @private
    */
-  #getDataFromZoteroItem(item: Zotero.Item): any {
+  async #getDataFromZoteroItem(item: Zotero.Item): Promise<any> {
     // Extract all necessary information from the Zotero item.
     const authors = this.#getAuthorsFromZoteroItem(item);
     const conferenceName = item.getField("conferenceName").toString();
@@ -116,6 +135,54 @@ export class MainViewController implements MainViewControllable {
     if (url !== "")
       data.url = url;
 
+    if (item.itemType === "encyclopediaArticle"|| item.itemType === "webpage") {
+      // Web pages do not have proper abstracts.
+      // The full inner-text needs to be extracted instead.
+      CustomLogger.log(
+        `Extracting text from web page item: ${title}`,
+        "warning",
+        "MainViewController"
+      );
+      // The full inner-text (or "snapshot") may be stored as an attachment.
+      const attachmentItemIds = item.getAttachments();
+      if (attachmentItemIds.length === 0)
+        // No snapshot attachment has been found.
+        return data;
+      const attachmentItem = Zotero.Items.get(attachmentItemIds[0]);
+      // Get the absolute file path to the attachment in local storage as a URL.
+      const attachmentFilepath = attachmentItem.getLocalFileURL();
+
+      // Get the snapshot attachment through an HTTP GET request.
+      const response = await window.fetch(attachmentFilepath);
+      if (!response.ok) {
+        // An error has occurred when locating the file in local storage.
+        CustomLogger.log(
+          `No snapshot attachment found for web page item: ${title}`,
+          "error",
+          "MainViewController"
+        );
+        return data;
+      }
+      // Extract the contents of the snapshot attachment file.
+      const responseText = await response.text();
+
+      // Only extract useful textual content from the file, i.e. ignore HTML tags.
+      const pTagText = this.#getHtmlPTagText(responseText);
+      if (pTagText !== undefined) {
+        if (data.abstract === undefined)
+          // The abstract does not exist as a data field yet.
+          data.abstract =  pTagText;
+        else
+          // There already exists some abstract text for this item.
+          data.abstract += pTagText;
+        CustomLogger.log(
+          `Successfully extracted text from web page item: ${title}`,
+          "warning",
+          "MainViewController"
+        );
+      }
+    }
+
     return data;
   }
 
@@ -139,13 +206,20 @@ export class MainViewController implements MainViewControllable {
     return filter;
   }
 
-  #sendRecoRequest(targetItems: Zotero.Item[], existingItems: Zotero.Item[]) {
-    const targetData = targetItems.map(item => {
-      return this.#getDataFromZoteroItem(item);
-    });
-    const existingData = existingItems.map(item => {
-      return this.#getDataFromZoteroItem(item);
-    });
+  /**
+   * Sends a recommendation request to the PolarRec web API application.
+   *
+   * @param targetItems - The list of Zotero items treated as targets.
+   * @param existingItems - The list of existing Zotero items in the library.
+   * @private
+   */
+  async #sendRecoRequest(targetItems: Zotero.Item[], existingItems: Zotero.Item[]) {
+    const targetData = await Promise.all(targetItems.map(async item => {
+      return await this.#getDataFromZoteroItem(item);
+    }));
+    const existingData = await Promise.all(existingItems.map(async item => {
+      return await this.#getDataFromZoteroItem(item);
+    }));
     const filter = this.#getRecoFilter(targetData);
 
     // Check which of the resource databases the user has allowed in the filter.
@@ -162,6 +236,7 @@ export class MainViewController implements MainViewControllable {
       "warning",
       "MainViewController"
     );
+    // FIXME: Make the operation asynchronous rather than use callbacks.
     window.fetch(apiUrl, {
       method: "POST",
       headers: {
