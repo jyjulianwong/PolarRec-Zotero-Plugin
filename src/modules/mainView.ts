@@ -399,14 +399,14 @@ class MainView {
 
         titleElem.setAttribute("value", results[l][i].title);
 
-        if (results[l][i].authors !== undefined)
+        if (results[l][i].authors !== undefined && results[l][i].authors.length > 0)
           authorsElem.setAttribute(
             "value",
             results[l][i].authors
               .reduce((text: string, author: string) => text + ", " + author)
           );
         else
-          authorsElem.setAttribute("value", results[l][i].year);
+          authorsElem.setAttribute("value", "No Authors");
 
         if (results[l][i].year !== undefined)
           yearElem.setAttribute("value", results[l][i].year);
