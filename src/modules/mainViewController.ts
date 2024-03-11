@@ -20,7 +20,7 @@ export class MainViewController implements MainViewControllable {
       // If in development mode, use locally-deployed Flask server instead.
       "http://127.0.0.1:5000" :
       // Otherwise, use latest stable release of PolarRec API.
-      "http://polarrec-20230627133606-env.eba-g5p2qwqn.eu-west-2.elasticbeanstalk.com";
+      "http://34.73.167.164:8080";
   }
 
   /**
