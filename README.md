@@ -1,9 +1,5 @@
 [![Using Zotero Plugin Template](https://img.shields.io/badge/Using-Zotero%20Plugin%20Template-blue?style=flat-square&logo=github)](https://github.com/windingwind/zotero-plugin-template)
 
-# Deprecated
-
-As of 2024-02-23, the PolarRec web API is no longer publicly available as it is in the process of being migrated and is no longer being hosted on Amazon Web Services. Developers can continue to test the PolarRec web API and the PolarRec Zotero Plugin on their local machines by cloning this repository and building the solution as documented here. This documentation will be updated once the PolarRec web API is publicly available again.
-
 # PolarRec (Zotero Plugin)
 
 PolarRec is an academic resource recommendation engine, tailor-made for the [Zotero](https://www.zotero.org/) research assistant platform. Given a collection of target academic resources (such as papers of interest to the user), PolarRec utilises publicly available data including authors, conference names, publication dates, citations and citation counts to collect and generate recommended resources for the user.
